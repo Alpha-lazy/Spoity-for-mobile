@@ -390,11 +390,17 @@ function Search() {
                         ? { backgroundColor: "#222222" }
                         : { backgroundColor: "#181818" }
                     }
-                    onClick={() => {
+                    onClick={(event) => {
+                      if(event.target.className !== "tbname"){
                       setSongId(searchTrack[0].id);
                       setSong(searchTrack);
                       RetriveSuggestion(searchTrack[0].id);
                       setCurrPlaylist([]);
+                      }
+                      console.log(event.target);
+                      console.log(event.currentTarget);
+                      
+                      
                     }}
                   >
                  
@@ -436,6 +442,8 @@ function Search() {
                             color: "white",
                           }}
                           title={searchTrack[0].name}
+                          className="tbname"
+                          onClick={()=>{navigate(`/track/${searchTrack[0].id}`)}}
                         >
                           {searchTrack[0].name}
                         </div>

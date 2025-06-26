@@ -542,9 +542,9 @@ function Song() {
                               )}
                             </td>
                             <td
-                              onClick={() => {
-                                playsong(data.id);
-                              }}
+                              // onClick={() => {
+                              //   playsong(data.id);
+                              // }}
                               style={{
                                 display: "flex",
                                 gap: "15px",
@@ -553,7 +553,12 @@ function Song() {
                                 paddingRight: "5px",
                               }}
                             >
+                              
                               <img
+                              loading="lazy"
+                              onClick={() => {
+                                playsong(data.id);
+                              }}
                                 className="tbimg"
                                 width="45px"
                                 height="45px"
@@ -578,6 +583,8 @@ function Song() {
                                       ? "Active-audio"
                                       : "tbname"
                                   }
+
+                                  onClick={()=>{navigate(`/track/${data.id}`)}}
                                 >
                                   {data.name}
                                 </div>
@@ -595,10 +602,13 @@ function Song() {
                                     paddingRight: " 15px",
                                   }}
                                 >
-                                  {" "}
-                                  {data.artists.all.map((artist) => {
-                                    return artist.name + ", ";
+                                 
+                                  {data.artists.primary.map((artist) => {
+                                    
+                                      return artist.name + ", ";
+                                 
                                   })}
+                                 
                                 </div>
                               </div>
                               {/* data.artists.all[0].name */}

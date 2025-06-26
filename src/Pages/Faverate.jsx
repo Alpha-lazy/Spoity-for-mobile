@@ -70,7 +70,7 @@ function Faverate() {
   useEffect(() => {
     const favPlaylistData = async () => {
       const favdata = await fetchfevorite();
-      console.log(favdata);
+      
 
       // Only update state if data exists and has changed
       if (favdata && JSON.stringify(favdata) !== JSON.stringify(fevroite)) {
@@ -93,7 +93,7 @@ function Faverate() {
         "space-between";
       document.getElementById("libHeader").style.alignItems = "start";
       document.getElementById("libHeader").style.flexDirection = "unset";
-      document.getElementById("libHeader").style.height = "50px";
+      document.getElementById("libHeader").style.height = "70px";
       document.getElementById("libHeader").style.paddingTop = "18px";
 
       // document.getElementById("libHeader").style.paddingLeft = "20px";
@@ -137,9 +137,7 @@ function Faverate() {
   }
 
   // Fetch playlist track
-  useEffect(() => {
-    console.log(loading);
-  }, [loading]);
+ 
 
   const fevPlaylisttrack = async (id, url, limit) => {
     try {
@@ -630,7 +628,7 @@ function Faverate() {
                         marginTop: "3px",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent:"center",
+                        // justifyContent:"center",
                         width:"100%",
                         gap: "10px",
                         cursor: "pointer",
@@ -646,7 +644,7 @@ function Faverate() {
                       <div id="fevinfo" style={{ height: "100%" }}>
                         <div
                           style={{
-                            width: "255px",
+                            width: "230px",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",

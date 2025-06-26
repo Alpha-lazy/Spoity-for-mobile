@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 // import Song from './Song';
 import { useData } from "./DataContext";
 import js from "@eslint/js";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Login from "./Login";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -27,7 +27,8 @@ function Footer() {
   const [downloadAudio, setDownloadAudio] = useState();
   const [index, setIndex] = useState(0);
   const [value, setValue] = useState("0");
-  const location = useLocation();
+  const navigate = useNavigate()
+
 
   useEffect(() => {
     setIndex(0);
@@ -49,13 +50,15 @@ function Footer() {
   }
 
   const getdownloadAudio = async() => {
+
+    
     const options = {method: 'GET', url: `https://jiosavan-api2.vercel.app/api/songs/${songId}`};
     try {
    
     
       const { data } = await axios.request(options);
-      console.log(data.data[0].downloadUrl[4].url);
-       audio.src = data.data[0].downloadUrl[4].url
+       audio.src = data.data[0].downloadUrl[3].url
+      //  setCurrentSong(data.data)
          audio.load()
          audio.play()
          let title = data.data[0].name;
@@ -85,8 +88,7 @@ function Footer() {
     }
   
     
-     console.log();
-    
+   
     // console.log(download);
    
 
@@ -98,17 +100,21 @@ function Footer() {
   
 
   useEffect(() => {
+
     if (
       songId !== undefined &&
       song.findIndex((item) => item.id === songId) !== -1
     ) {
       setCurrentSong(song.filter((item) => item.id === songId));
+     console.log("hjiii");
+     
+      
       // setIndex(song.findIndex((item) => item.id === songId));
       if (suggestion.length !== 0) {
         setIndex(suggestion.findIndex((item) => item.id === songId));
       }
    let src = song.filter((item) => item.id === songId)[0].downloadUrl[4].url
-   console.log(src);
+ 
     //  let srcd = fetch(src)
     //   audio.src = src;
     // //   audio.load()
@@ -188,6 +194,9 @@ function Footer() {
       }
     }
     getdownloadAudio() 
+
+     
+    
   },[songId]);
 
 
@@ -368,8 +377,10 @@ function Footer() {
                     whiteSpace: "nowrap",
                     textOverflow: "ellipsis",
                     overflow: "hidden",
+                    cursor:"pointer"
                   }}
                   className="tbname"
+                  onClick={()=>{navigate(`/track/${songId}`)}}
                 >
                   {currentSong[0].name}
                 </div>
@@ -515,6 +526,7 @@ function Footer() {
                 width: "25px",
                 height: "18px",
                 display: "flex",
+                fontFamily:"MyCustomFont"
               }}
               id="duration-time"
             >

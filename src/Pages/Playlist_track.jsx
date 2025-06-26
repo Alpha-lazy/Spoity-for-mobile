@@ -205,7 +205,7 @@ function Playlist_track() {
 
   // Usage
   useEffect(() => {
-    if (loading) {
+    if (loading && playlistData) {
       // 5% size ratio
 
       // linear-gradient(to bottom, #926445, transparent)
@@ -219,16 +219,16 @@ function Playlist_track() {
           )
           .catch(console.error);
       }
-      else if (playlistData !== undefined && playlistData.songs[0] !==undefined) {
-        getAverageColor(`${playlistData.songs.length !==0?playlistData.songs[0].image[2].url:""}`, 4)
-        .then(
-          (color) =>
-            (document.getElementById(
-              "playlistInfo"
-            ).style.background = `linear-gradient(to bottom,${color.rgb}, transparent)`)
-        )
-        .catch(console.error);
-      }
+      // else if (playlistData !== undefined && playlistData.songs[0] !==undefined) {
+      //   getAverageColor(`${playlistData.songs.length !==0?playlistData.songs[0].image[2].url:""}`, 4)
+      //   .then(
+      //     (color) =>
+      //       (document.getElementById(
+      //         "playlistInfo"
+      //       ).style.background = `linear-gradient(to bottom,${color.rgb}, transparent)`)
+      //   )
+      //   .catch(console.error);
+      // }
     }
 
     //   if (playlistData !== undefined && playlistData.songs.length !==0) {
@@ -322,6 +322,7 @@ function Playlist_track() {
             url: playlistData.url,
             songCount: playlistData.songCount,
             imageUrl: playlistData.image[1].url,
+            type: playlistData.type
           }, // Body
           headers: {
             "Content-Type": "application/json",
@@ -514,7 +515,7 @@ function Playlist_track() {
       }}
     >
       <div className="content" id="content" style={{ padding: "0px 0px" }}>
-        {loading ? (
+        {loading && playlistData? (
           <div
             onScroll={header}
             className="track"
