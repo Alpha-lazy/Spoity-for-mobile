@@ -1,20 +1,20 @@
 import React from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
-import Home from "./Pages/Home";
-import Footer from "./Pages/Footer";
-import Album from "./Pages/album";
+import Home from "./Pages/Home.jsx";
+import Footer from "./Pages/Footer.jsx";
+import Album from "./Pages/Album.jsx";
 import "./Pages/mobile.css";
-import Playlist from "./Pages/Playlist";
-import Search from "./Pages/Search";
-import MainSearch from "./Pages/Main-search";
-import SearchSongs from "./Pages/Search-songs";
-import SearchAlbums from "./Pages/Search-albums";
-import SearchPlaylists from "./Pages/Search-playlists";
-import Login from "./Pages/Login";
-import Library from "./Pages/Library";
-import Creat_playlist from "./Pages/Creat_playlist";
-import Add_songs from "./Pages/Add_songs";
-import Add_album_songs from "./Pages/Add_album_songs";
+import Playlist from "./Pages/Playlist.jsx";
+import Search from "./Pages/Search.jsx";
+import MainSearch from "./Pages/Main-search.jsx";
+import SearchSongs from "./Pages/Search-songs.jsx";
+import SearchAlbums from "./Pages/Search-albums.jsx";
+import SearchPlaylists from "./Pages/Search-playlists.jsx";
+import Login from "./Pages/Login.jsx";
+import Library from "./Pages/Library.jsx";
+import Creat_playlist from "./Pages/Creat_playlist.jsx";
+import Add_songs from "./Pages/Add_songs.jsx";
+import Add_album_songs from "./Pages/Add_album_songs.jsx";
 
 function MobileWebPlayerRouter() {
 
