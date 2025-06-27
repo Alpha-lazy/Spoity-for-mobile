@@ -117,6 +117,13 @@ function Footer() {
     let src = responce.data.data[0].downloadUrl[3].url;
     audio.src = src;
     audio.play();
+    console.log("Hi");
+    
+   if (window.Android && window.Android.playMusic) {  
+
+    window.Android.playMusic(responce.data.data[0].downloadUrl[3].url);
+    
+  }
 
     // set average color to mini player
     document.getElementById("playerImg").src = await responce.data.data[0]
