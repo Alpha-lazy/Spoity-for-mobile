@@ -291,6 +291,17 @@ function Footer() {
   // toggle play pause using useEffect
   useEffect(() => {
     if (currSong) {
+        if (window.Android && window.Android.onAudioPlay) {
+     
+         if ( window.Android.onAudioPlay()) {
+        document.getElementById("pause").style.display = "none";
+        document.getElementById("play").style.display = "block";
+      } else {
+        document.getElementById("pause").style.display = "block";
+        document.getElementById("play").style.display = "none";
+      }
+    }
+    else{
       if (audio.played) {
         document.getElementById("pause").style.display = "none";
         document.getElementById("play").style.display = "block";
@@ -298,6 +309,7 @@ function Footer() {
         document.getElementById("pause").style.display = "block";
         document.getElementById("play").style.display = "none";
       }
+    }
     }
   }, [audio.played]);
 
@@ -336,7 +348,13 @@ function Footer() {
 
   // change the value of big player progress bar
   function Progress(e) {
+     if (window.Android && window.Android.receiveCurrentTime) {
+    window.Android.receiveCurrentTime(audio.currentTime) =  Math.floor((e.target.value / 100) * audio.duration);
+  }
+  else{
+
     audio.currentTime = Math.floor((e.target.value / 100) * audio.duration);
+  }
   }
 
   // shuffle songs
