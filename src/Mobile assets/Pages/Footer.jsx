@@ -117,16 +117,11 @@ function Footer() {
     let src = responce.data.data[0].downloadUrl[3].url;
     audio.src = src;
  
-    console.log("Hi");
+  
     
-   if (window.Android && window.Android.playMusic) {  
-
-    window.Android.playMusic(responce.data.data[0].downloadUrl[3].url);
-    
-  }
-  else{
+   
     audio.play()
-  }
+  
 
     // set average color to mini player
     document.getElementById("playerImg").src = await responce.data.data[0]
@@ -291,17 +286,7 @@ function Footer() {
   // toggle play pause using useEffect
   useEffect(() => {
     if (currSong) {
-        if (window.Android && window.Android.onAudioPlay) {
-     
-         if ( window.Android.onAudioPlay()) {
-        document.getElementById("pause").style.display = "none";
-        document.getElementById("play").style.display = "block";
-      } else {
-        document.getElementById("pause").style.display = "block";
-        document.getElementById("play").style.display = "none";
-      }
-    }
-    else{
+       
       if (audio.played) {
         document.getElementById("pause").style.display = "none";
         document.getElementById("play").style.display = "block";
@@ -309,7 +294,7 @@ function Footer() {
         document.getElementById("pause").style.display = "block";
         document.getElementById("play").style.display = "none";
       }
-    }
+    
     }
   }, [audio.played]);
 
@@ -317,28 +302,18 @@ function Footer() {
   function togglePlaypause() {
     if (audio.paused) {
           
-   if (window.Android && window.Android.playMusic) {  
-
-    window.Android.playMusic(audio.src);
-    
-  }
-  else{
+   
     audio.play()
-  }
+  
       document.getElementById("pause").style.display = "none";
       document.getElementById("play").style.display = "block";
       document.getElementById("big-play").style.display = "block";
       document.getElementById("big-pause").style.display = "none";
     } else {
           
-   if (window.Android && window.Android.playMusic) {  
-
-    window.Android.stopMusic();
-    
-  }
-  else{
+  
     audio.pause()
-  }
+  
       document.getElementById("pause").style.display = "block";
       document.getElementById("play").style.display = "none";
       document.getElementById("big-play").style.display = "none";
@@ -348,14 +323,9 @@ function Footer() {
 
   // change the value of big player progress bar
   function Progress(e) {
-     if (window.Android && window.Android.receiveCurrentTime) {
-   let current =  window.Android.receiveCurrentTime(audio.currentTime) 
-     current =  Math.floor((e.target.value / 100) * audio.duration);
-  }
-  else{
-
+ 
     audio.currentTime = Math.floor((e.target.value / 100) * audio.duration);
-  }
+  
   }
 
   // shuffle songs
