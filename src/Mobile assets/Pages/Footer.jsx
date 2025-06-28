@@ -391,7 +391,10 @@ function Footer() {
 
   // audio ended
 
-  audio.addEventListener("ended", next);
+  audio.addEventListener("ended", next,()=>{ 
+       if (window.Android && window.Android.songEnded) {
+        window.Android.songEnded(); // You handle next song in native if needed
+    }});
 
   // on current song chnages
 
