@@ -116,13 +116,16 @@ function Footer() {
     setCurrSong(responce.data.data[0]);
     let src = responce.data.data[0].downloadUrl[3].url;
     audio.src = src;
-    audio.play();
+ 
     console.log("Hi");
     
    if (window.Android && window.Android.playMusic) {  
 
     window.Android.playMusic(responce.data.data[0].downloadUrl[3].url);
     
+  }
+  else{
+    audio.play()
   }
 
     // set average color to mini player
@@ -301,13 +304,29 @@ function Footer() {
   // toggle play pause utton svg
   function togglePlaypause() {
     if (audio.paused) {
-      audio.play();
+          
+   if (window.Android && window.Android.playMusic) {  
+
+    window.Android.playMusic(audio.src);
+    
+  }
+  else{
+    audio.play()
+  }
       document.getElementById("pause").style.display = "none";
       document.getElementById("play").style.display = "block";
       document.getElementById("big-play").style.display = "block";
       document.getElementById("big-pause").style.display = "none";
     } else {
-      audio.pause();
+          
+   if (window.Android && window.Android.playMusic) {  
+
+    window.Android.stopMusic();
+    
+  }
+  else{
+    audio.pause()
+  }
       document.getElementById("pause").style.display = "block";
       document.getElementById("play").style.display = "none";
       document.getElementById("big-play").style.display = "none";
