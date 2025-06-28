@@ -349,7 +349,8 @@ function Footer() {
   // change the value of big player progress bar
   function Progress(e) {
      if (window.Android && window.Android.receiveCurrentTime) {
-    window.Android.receiveCurrentTime(audio.currentTime) =  Math.floor((e.target.value / 100) * audio.duration);
+   let current =  window.Android.receiveCurrentTime(audio.currentTime) 
+     current =  Math.floor((e.target.value / 100) * audio.duration);
   }
   else{
 
