@@ -3,7 +3,8 @@ import OpenAI from 'openai/index.mjs'
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import aiIcon from "C:/Users/HP/Desktop/spotify clone/AlphaMusic Updated - Copy/src/Images/ai_icon.png"
+// import aiIcon from "C:/Users/HP/Desktop/spotify clone/AlphaMusic Updated - Copy/src/Images/ai_icon.png"
+import aiIcon from "../../Images/ai_icon.png"
 import "./mobile.css"
 
 function Generate_playlist() {
