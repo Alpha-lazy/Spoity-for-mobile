@@ -13,7 +13,23 @@ function Home() {
   const [HappySong, setHappySong] = useState();
   const [Artist, setArtist] = useState();
   const navigate = useNavigate();
+  const [songForYou , setSongForYou] = useState()
   const { songId } = useData();
+
+
+
+    // retrive suggestion
+  async function retriveSuggestion(id) {
+    let responce = await axios.request({
+      method: "GET",
+      url: `https://jiosavan-api2.vercel.app/api/songs/${id}/suggestions`,
+      params: {
+        limit: 100,
+      },
+    });
+
+    setSongForYou(responce.data.data);
+  }
 
   // fetch popular albums
   async function Fetch_Popular_Albums() {
@@ -94,6 +110,10 @@ function Home() {
     Fetch_Sad_Playlist();
     Fetch_Happy_Playlist();
     Fetch_Artist();
+
+    if (localStorage.getItem("Current Song") !== undefined) {
+         retriveSuggestion(localStorage.getItem("Current Song"))
+    }
     document.documentElement.scrollTop = 0;
   }, []);
 
@@ -153,11 +173,73 @@ function Home() {
         </div>
       </header>
        
+
+       {/* Songs for you */}
+
+    {
+      songForYou !==undefined?
+      <div style={{ marginTop: "100px", height: "330px" }}>
+        <header
+          style={{
+            color: "white",
+            fontWeight: "700",
+            fontSize: "20px",
+            padding: "0px 15px",
+            display: "flex",
+            alignItems: "center",
+            height: "10px",
+          }}
+        >
+          Songs for you
+        </header>
+        <div
+          id="popular-albums"
+          style={{
+            display: "inline-flex",
+            flexWrap: "nowrap",
+            flexFlow: "column wrap",
+            overflowX: "scroll",
+            height: "300px",
+            marginTop: "20px",
+          }}
+        >
+          {songForYou?.map((data) => {
+            return (
+              <div
+                className="popular_album_card"
+                onClick={() => {
+                  navigate(`/album/${data.album.id}`);
+                }}
+                style={{
+                  width: "185px",
+                  height: "240px",
+                  objectFit: "contain",
+                  padding: "10px",
+                  borderRadius: "7px",
+                }}
+              >
+                <img
+                  width="100%"
+                  height="165px"
+                  style={{ borderRadius: "5px" }}
+                  src={data.image[2].url}
+                  alt=""
+                />
+                <div className="name">
+                  <div>{data.name}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      :""
+      }
    
 
       {/* Popular albums and singles */}
 
-      <div style={{ marginTop: "100px", height: "330px" }}>
+      <div style={songForYou!==undefined?{ marginTop: "0px", height: "330px" }:{marginTop: "100px", height: "330px" }}>
         <header
           style={{
             color: "white",
@@ -471,6 +553,7 @@ function Home() {
             return (
               <div
                 className="popular_album_card"
+                onClick={()=>{navigate(`/artist/${data.id}`)}}
                 style={{
                   width: "160px",
                   height: "240px",
@@ -545,7 +628,7 @@ function Home() {
             !localStorage.getItem("token") ?
             <>
              <a style={{width:"100%",height:"50px",backgroundColor:"transparent",border:"1px solid white",borderRadius:"50px",display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none",color:"white"}} href={"/auth/login"}>Login</a>
-             <a style={{width:"100%",height:"50px",backgroundColor:"white",border:"1px solid white",borderRadius:"50px",display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none",color:"Black"}} href={"/auth/signUp"}>Sign Up</a>
+             <a style={{width:"100%",height:"50px",backgroundColor:"white",border:"1px solid white",borderRadius:"50px",display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none",color:"Black"}} href={"/auth/signup"}>Sign Up</a>
             </>
              :
         

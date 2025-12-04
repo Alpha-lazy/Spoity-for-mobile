@@ -31,6 +31,7 @@ export const DataProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState("");
   const [privatePlaylist, setPrivatePlaylist] = useState([]);
+  const [globalplaylistId, setGlobalPlaylistId] = useState();
 
   // Load audio track
   const loadTrack = useCallback(
@@ -95,7 +96,9 @@ export const DataProvider = ({ children }) => {
         currPlaylist,
         setCurrPlaylist,
         privatePlaylist,
-        setPrivatePlaylist
+        setPrivatePlaylist,
+        globalplaylistId,
+        setGlobalPlaylistId
       }}
     >
       {children}

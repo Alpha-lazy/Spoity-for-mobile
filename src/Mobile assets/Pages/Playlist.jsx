@@ -3,93 +3,78 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useData } from "../../Pages/DataContext";
 import toast from "react-hot-toast";
+import deletePlaylist from "../../Images/delete_playlist_icon.png"
+import likedSongs from '../../Images/likedsongs.jpg'
 
 function Playlist() {
   const { playlistId } = useParams();
   const [playlistData, setPlaylistData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [fevPlaylist , setFevPlaylist] = useState()
-  const { setSongId, songId, setSong } = useData();
-  const [albumId,setAlbumId] = useState("")
-  const naviagte = useNavigate()
+  const [artistId, setArtistId] = useState("")
+  const [fevPlaylist, setFevPlaylist] = useState();
+  const { setSongId, songId, setSong, song, setGlobalPlaylistId, audio } =
+    useData();
+  const [albumId, setAlbumId] = useState("");
+  const navigate = useNavigate();
 
-  
   const fetch_Playlist = async () => {
     try {
-    setIsLoading(false);
-    if (playlistId.length < 15) {
-    const responce = await axios.request({
-      method: "GET",
-      url: "https://jiosavan-api2.vercel.app/api/playlists",
-      params: { id: playlistId, limit: parseInt(playlistId) },
-    });
-    setPlaylistData(responce.data.data);
-          
-    }
-    else{
-       
-       await axios({
-                method: "get",
-                url: `https://authentication-seven-umber.vercel.app/api/playlist${playlistId}`,
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }).then((responce)=>{
-                  let songs = responce.data.playlist[0].songs;
-                  setPlaylistData({
-                    name:responce.data.playlist[0].name,
-                    image:[{url:responce.data.playlist[0]?.imageUrl[0]},{url:responce.data.playlist[0]?.imageUrl[1]},{url:responce.data.playlist[0]?.imageUrl[2]},{url:responce.data.playlist[0]?.imageUrl[3]}],
-                    description:responce.data.playlist[0].description,
-                    songs:[],
-                  })
-                  if (songs?.length !== 0) {
+      setIsLoading(false);
+      if (playlistId.length < 15) {
+        const responce = await axios.request({
+          method: "GET",
+          url: "https://jiosavan-api2.vercel.app/api/playlists",
+          params: { id: playlistId, limit: parseInt(playlistId) },
+        });
+        setGlobalPlaylistId(playlistId);
+        setPlaylistData(responce.data.data);
+      } else {
+        await axios({
+          method: "get",
+          url: `https://authentication-seven-umber.vercel.app/api/playlist${playlistId}`,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }).then((responce) => {
+          let songs = responce.data.playlist[0].songs;
+          setPlaylistData({
+            id: responce.data.playlist[0].playlistId,
+            name: responce.data.playlist[0].name,
+            image: [
+              { url: responce.data.playlist[0]?.imageUrl[0] },
+              { url: responce.data.playlist[0]?.imageUrl[1] },
+              { url: responce.data.playlist[0]?.imageUrl[2] },
+              { url: responce.data.playlist[0]?.imageUrl[3] },
+            ],
+            description: responce.data.playlist[0].desc,
+            songs: [],
+          });
+          setGlobalPlaylistId(playlistId);
+          if (songs?.length !== 0) {
+            songs.forEach(async (id) => {
+              let fetcheSongs = [];
+              await axios
+                .get(`https://jiosavan-api2.vercel.app/api/songs/${id}`)
+                .then(async (responce) => {
+                  let index = songs.indexOf(id);
 
-                  songs.forEach(async(id) => {
-                    let fetcheSongs = [];
-                        await axios.get(`https://jiosavan-api2.vercel.app/api/songs/${id}`)
-                              .then(async (responce) => {
-                              
-                                    let index = songs.indexOf(id);
+                  songs.splice(index, 1, responce.data.data[0]);
 
-                                  
-                                    songs.splice(index,1,responce.data.data[0])
-                                    
-                                    setPlaylistData(prevData =>(
-                                      {
-                                        ...prevData,
-                                        songs:songs
-
-                                      }
-                                    )
-                                    )
-                                    
-                                  
-                                })
-                                
-                                
-                                   
-                              })
-                             
-                           
-                  
-                 
-                  
-                                      
-                  }
-                   
-              })
-        
-    }
-  
-      } catch (error) {
-       console.log(error);
-       
+                  setPlaylistData((prevData) => ({
+                    ...prevData,
+                    songs: songs,
+                  }));
+                });
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
-  
-  
   // get average color from image
   async function getAverageColor(imageUrl, ratio = 0.1) {
     // Create dummy image to load source
@@ -145,11 +130,8 @@ function Playlist() {
     };
   }
 
- 
-
   const setBackgroundColor = async () => {
     let color = await getAverageColor(playlistData?.image[0].url);
-    console.log(color);
 
     //  document.body.style.background = `linear-gradient(to bottom, ${color.rgb},${color.rgb}, #121212)`
     document.getElementById(
@@ -157,13 +139,11 @@ function Playlist() {
     ).style.background = `linear-gradient(to bottom, ${color.rgb},transparent)`;
   };
 
-
-
   useEffect(() => {
-    
     fetch_Playlist().then(async (responce) => {
       setIsLoading(true), setBackgroundColor();
     });
+
     document.documentElement.scrollTop = 0;
   }, [playlistId]);
 
@@ -171,123 +151,144 @@ function Playlist() {
     setBackgroundColor();
   }, [playlistData]);
 
-  async function showmoreInfo(id,url,title,primaryArtists,type) {
-      const songImg = document.getElementById("song-img");
-      const songTitle = document.getElementById("song-title");
-      const songArtist = document.getElementById("song-artist");
-      const songInfo = document.getElementById("songInfo");
-      const ViewAlbum = document.getElementById("View-album");
-      setAlbumId("")
+  async function showmoreInfo(id, url, title, primaryArtist, type) {
+    const songImg = document.getElementById("song-img");
+    const songTitle = document.getElementById("song-title");
+    const songArtist = document.getElementById("song-artist");
+    const songInfo = document.getElementById("songInfo");
+    const ViewAlbum = document.getElementById("View-album");
+    setAlbumId("");
+
+    let responce = await axios.request({
+      method: "GET",
+      url: `https://jiosavan-api2.vercel.app/api/songs/${id}`,
+    });
+
+    setAlbumId(responce.data.data[0]?.album?.id);
+    setArtistId(primaryArtist.id)
+
+    songImg.src = url;
+    songTitle.textContent = title;
+    songArtist.textContent = primaryArtist.name;
+
+    if ((songInfo.style.display = "none")) {
+      songInfo.style.display = "grid";
+    } else {
+      songInfo.style.display = "none";
+    }
+  }
+
+  // delete created playlist
+
+  const deleteCreatedPlaylist = async() =>{
+  try {
+
+    const responce = await axios.request({
+      "method":"DELETE",
+      "url":`https://authentication-seven-umber.vercel.app/api/remove/playlist${playlistId}`,
+      "headers":{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${localStorage.getItem("token")}`
+      }
       
-   let responce = await axios.request({method:"GET",url:`https://jiosavan-api2.vercel.app/api/songs/${id}`});
+
+    })
+    .then((responce)=>{
+      toast.success("Playlist deleted successfully",{duration:2000})
+      navigate("/library")
+    })
+
+      
+  } catch (error) {
+    toast.error("Error while deleting playlist",{duration:2000})
+  }
     
-    setAlbumId(responce.data.data[0]?.album?.id)
+  }
 
-          songImg.src = url;
-          songTitle.textContent = title;
-          songArtist.textContent = primaryArtists;
+  // add to fevorite
 
-      if(songInfo.style.display = "none"){
-         songInfo.style.display = "grid"
-      }
-      else{
-        songInfo.style.display = "none"
-      }
-    }
-
-
-    // add to fevorite
-
-    const addToFeverite = async () => { 
-     try {
-      if (localStorage.getItem('token')) {
-  
-       const responce = await axios.request(
-        {
-        url:"https://authentication-seven-umber.vercel.app/api/playlists/favorite",
-        method:"POST",
-        headers:{
-              "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-       }
-       ,data:{
-            playlistId: playlistData.id,
-            name: playlistData.name,
-            url: playlistData.url,
-            songCount: playlistData.songCount,
-            imageUrl: playlistData.image[1].url,
-            type: playlistData.type
-       }})
-       .then((responce)=>{
-          toast("Added to Your Library", {
-    className: "spotify-toast",
-    bodyClassName: "spotify-toast-body",
-    progressClassName: "spotify-toast-progress",
-    icon:(
-       <img
-      src={playlistData?.image[2]?.url} // Your image path
-      alt="icon"
-      style={{
-        width: "36px",
-        height: "36px",
-        borderRadius: "4px",
-        objectFit: "cover",
-      }}
-    />
-    )
-  });
-        // toast.success("Added to library", { duration: 2000 });
-        getFevoritePlaylist()
-       })
-       .catch((error)=>{
-         
-                    toast.error(error.response.data.message, { duration: 2000 });
-                 
-       })
-             
-      }
-
-      else{
-        toast.error("Please login or signup first");
-      }
-     } catch (error) {
-      
-     }
-    }
-
-    // remove fevorite playlist
-
-    const removeFevoritePlaylist = async () =>{
-       try {
-        const responce = await axios.request({
-            method: "delete",
-            url: `https://authentication-seven-umber.vercel.app/api/playlists/unfavorite/${playlistId}`,
+  const addToFeverite = async () => {
+    try {
+      if (localStorage.getItem("token")) {
+        const responce = await axios
+          .request({
+            url: "https://authentication-seven-umber.vercel.app/api/playlists/favorite",
+            method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
+            data: {
+              playlistId: playlistData.id,
+              name: playlistData.name,
+              url: playlistData.url,
+              songCount: playlistData.songCount,
+              imageUrl: playlistData.image[1].url,
+              type: playlistData.type,
+            },
           })
-          .then((responce)=>{
-               setFevPlaylist([])
-               getFevoritePlaylist()
-               toast.success("Remove from library" , 2000)
+          .then((responce) => {
+            toast("Added to Your Library", {
+              className: "spotify-toast",
+              bodyClassName: "spotify-toast-body",
+              progressClassName: "spotify-toast-progress",
+              icon: (
+                <img
+                  src={playlistData?.image[2]?.url} // Your image path
+                  alt="icon"
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "4px",
+                    objectFit: "cover",
+                  }}
+                />
+              ),
+            });
+            // toast.success("Added to library", { duration: 2000 });
+            getFevoritePlaylist();
           })
-          .catch((error)=>{
-            console.log("error while removing fevorite playlist");
-            console.log(error);
-            
-          })
-          
-       } catch (error) {
-         console.log(error);
-         
-       }
+          .catch((error) => {
+            toast.error(error.response.data.message, { duration: 2000 });
+          });
+      } else {
+        toast.error("Please login or signup first");
+      }
+    } catch (error) {}
+  };
+
+  // remove fevorite playlist
+
+  const removeFevoritePlaylist = async () => {
+    try {
+      const responce = await axios
+        .request({
+          method: "delete",
+          url: `https://authentication-seven-umber.vercel.app/api/playlists/unfavorite/${playlistId}`,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((responce) => {
+          setFevPlaylist([]);
+          getFevoritePlaylist();
+          toast.success("Remove from library", 2000);
+        })
+        .catch((error) => {
+          console.log("error while removing fevorite playlist");
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
     }
-    // get all fevorite playlist
-    const getFevoritePlaylist = async () => {
-      try {
-        if (localStorage.getItem("token")) {
-          const responce = await axios.request({
+  };
+  // get all fevorite playlist
+  const getFevoritePlaylist = async () => {
+    try {
+      if (localStorage.getItem("token")) {
+        const responce = await axios
+          .request({
             method: "GET",
             url: "https://authentication-seven-umber.vercel.app/api/playlists/favorites",
             headers: {
@@ -295,403 +296,739 @@ function Playlist() {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           })
-          .then((responce)=>{
-               setFevPlaylist(responce.data)
-               console.log(responce.data);
-               
+          .then((responce) => {
+            setFevPlaylist(responce.data);
           })
-          .catch((error)=>{
+          .catch((error) => {
             console.log("error while fetching fevorite playlist");
-          })
-          
-        } else {
-          // toast.error("Please login or signup first");
-        }
-      } catch (error) {
-        console.log(error);
+          });
+      } else {
+        // toast.error("Please login or signup first");
       }
-    };
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  useEffect(() => {
+    getFevoritePlaylist();
+  }, [playlistId]);
 
-  
+  useEffect(() => {
+    if (localStorage.getItem("isplaylistSong") === playlistId + songId) {
+      if (
+        document.getElementById("playlist-play") != null &&
+        document.getElementById("playlist-pause") != null
+      ) {
+        document.getElementById("playlist-play").style.display = "none";
+        document.getElementById("playlist-pause").style.display = "block";
+      }
+    } else {
+      if (
+        document.getElementById("playlist-play") != null &&
+        document.getElementById("playlist-pause") != null
+      ) {
+        document.getElementById("playlist-play").style.display = "block";
+        document.getElementById("playlist-pause").style.display = "none";
+      }
+    }
+  }, [songId]);
 
-    useEffect(()=>{
-            getFevoritePlaylist()
-    },[playlistId])
-
-   
-    
   return (
     <>
       {isLoading ? (
-       <> <div id="playlist-container" style={{ height: "100vh", width: "100%" }}>
-          <header
-            style={{
-              padding: "15px 15px",
-              display: "flex",
-              alignItems: "center",
-              position: "sticky",
-              width: "100%",
-              top: "0px",
-              height: "65px",
-            }}
-          >
-            <svg
-              data-encore-id="icon"
-              role="img"
-              aria-hidden="true"
-              style={{ width: "23px", height: "23px", fill: "#fff" }}
-              viewBox="0 0 24 24"
-            >
-              <path d="M13.414 3.5a.999.999 0 0 0-1.707-.707l-9.207 9.2 9.207 9.202a1 1 0 1 0 1.414-1.413L6.335 13H20.5a1 1 0 0 0 0-2H6.322l6.799-6.794a.999.999 0 0 0 .293-.707z"></path>
-            </svg>
-          </header>
-
+        <>
+          {" "}
           <div
-            style={{
-              width: "100%",
-              // height: "100%",
-              // display: "grid",
-              // gridTemplateRows: "290px 70%",
-              display: "flex",
-              flexDirection: "column",
-              gap: "15px",
-            }}
+            id="playlist-container"
+            style={localStorage.getItem('FavoriteId') === playlistId? { height: "100vh", width: "100%", background:"linear-gradient(rgb(73 14 242 / 70%), rgb(112 91 227 / 38%), transparent 63%)" }:{ height: "100vh", width: "100%" }}
           >
+            <header
+              style={{
+                padding: "15px 15px",
+                display: "flex",
+                alignItems: "center",
+                position: "sticky",
+                width: "100%",
+                top: "0px",
+                height: "65px",
+              }}
+            >
+              <svg
+                data-encore-id="icon"
+                role="img"
+                aria-hidden="true"
+                style={{ width: "23px", height: "23px", fill: "#fff" }}
+                viewBox="0 0 24 24"
+                onClick={() => {
+                  navigate(-1);
+                  audio.pause();
+                }}
+              >
+                <path d="M13.414 3.5a.999.999 0 0 0-1.707-.707l-9.207 9.2 9.207 9.202a1 1 0 1 0 1.414-1.413L6.335 13H20.5a1 1 0 0 0 0-2H6.322l6.799-6.794a.999.999 0 0 0 .293-.707z"></path>
+              </svg>
+            </header>
+
             <div
               style={{
                 width: "100%",
                 // height: "100%",
-                padding: "0px 16px 16px",
-                display: "flex",
-                // flexDirection:"column",
-                // alignItems:"center",
-                justifyContent: "center",
-                gap: "5px",
-                // padding: "0px 20px",
-              }}
-            >
-              {
-                playlistData?.songs.length !== 0
-                ?
-                <div
-                className="playlist-image"
-                style={{
-                  aspectRatio: "1/1",
-                }}
-              >
-                <img
-                  style={{
-                    objectFit: "cover",
-                    width: "100%",
-                    height: "100%",
-                    objectPosition: "center",
-                  }}
-                  src={playlistId.length <15  ?playlistData?.image[2]?.url :  playlistData?.image[0].url}
-                  alt=""
-                />
-              </div>
-              :
-                <div
-                className="playlist-image"
-                style={{
-                  aspectRatio: "1/1",
-                  backgroundColor:"#121212",
-                  display:"flex",
-                  justifyContent:"center",
-                  alignItems:"center"
-                }}
-              >
-            <svg data-encore-id="icon" role="img" aria-hidden="true" data-testid="playlist" viewBox="0 0 24 24" style={{width: "25%",fill:"rgb(127, 127, 127)"}}><path d="M6 3h15v15.167a3.5 3.5 0 1 1-3.5-3.5H19V5H8v13.167a3.5 3.5 0 1 1-3.5-3.5H6V3zm0 13.667H4.5a1.5 1.5 0 1 0 1.5 1.5v-1.5zm13 0h-1.5a1.5 1.5 0 1 0 1.5 1.5v-1.5z"></path></svg>
-              </div>
-            }
-            </div>
-
-            <div
-              style={{
+                // display: "grid",
+                // gridTemplateRows: "290px 70%",
                 display: "flex",
                 flexDirection: "column",
-                padding: "0px 16px",
-                gap: "5px",
+                gap: "15px",
               }}
             >
-              <div
-                style={{
-                  color: "white",
-                  fontSize: "1.7rem",
-                  fontWeight: "bold",
-                  textWrap: "balance",
-                }}
-              >
-                {playlistData?.name}
-              </div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: "#b3b3b3",
-                  textWrap: "pretty",
-                  fontFamily: "sans-serif",
-                }}
-              >
-                {playlistData?.description || playlistData?.description}
-              </div>
-              <div style={{ fontSize: "14px" }}>
-                {playlistData?.songCount || playlistData?.songs.length} songs 🎶 {playlistData?.type || "Private"}
-              </div>
               <div
                 style={{
                   width: "100%",
+                  // height: "100%",
+                  padding: "0px 16px 16px",
                   display: "flex",
-                  alignItems: "center",
-                  height: "60px",
-                  justifyContent: "space-between",
+                  // flexDirection:"column",
+                  // alignItems:"center",
+                  justifyContent: "center",
+                  gap: "5px",
+                  // padding: "0px 20px",
                 }}
               >
-                <div
-                  style={{ display: "flex", gap: "15px", alignItems: "center" }}
-                >
-                  { playlistId.length <15?
-                    !fevPlaylist?.find((item) => item.id === playlistId) || fevPlaylist?.length === 0
-                    ?(
-                    <svg
-                    data-encore-id="icon"
-                    role="img"
-                    aria-hidden="true"
-                    style={{ width: "28px", height: "24px", fill: "#ffffffb3" }}
-                    viewBox="0 0 24 24"
-                    onClick={()=>{addToFeverite()}}
-                  >
-                    <path d="M5.21 1.57a6.757 6.757 0 0 1 6.708 1.545.124.124 0 0 0 .165 0 6.741 6.741 0 0 1 5.715-1.78l.004.001a6.802 6.802 0 0 1 5.571 5.376v.003a6.689 6.689 0 0 1-1.49 5.655l-7.954 9.48a2.518 2.518 0 0 1-3.857 0L2.12 12.37A6.683 6.683 0 0 1 .627 6.714 6.757 6.757 0 0 1 5.21 1.57zm3.12 1.803a4.757 4.757 0 0 0-5.74 3.725l-.001.002a4.684 4.684 0 0 0 1.049 3.969l.009.01 7.958 9.485a.518.518 0 0 0 .79 0l7.968-9.495a4.688 4.688 0 0 0 1.049-3.965 4.803 4.803 0 0 0-3.931-3.794 4.74 4.74 0 0 0-4.023 1.256l-.008.008a2.123 2.123 0 0 1-2.9 0l-.007-.007a4.757 4.757 0 0 0-2.214-1.194z"></path>
-                  </svg>)
-                  :
-                  (
-                    <svg onClick={()=>{removeFevoritePlaylist()}} data-encore-id="icon" role="img" style={{ width: "28px", height: "24px", fill: "#1ed760" }} aria-hidden="true" viewBox="0 0 24 24"><path d="M8.667 1.912a6.257 6.257 0 0 0-7.462 7.677c.24.906.683 1.747 1.295 2.457l7.955 9.482a2.015 2.015 0 0 0 3.09 0l7.956-9.482a6.19 6.19 0 0 0 1.382-5.234l-.49.097.49-.099a6.3 6.3 0 0 0-5.162-4.98h-.002a6.24 6.24 0 0 0-5.295 1.65.623.623 0 0 1-.848 0 6.26 6.26 0 0 0-2.91-1.568z"></path></svg>
-                  )
-                  : ""
-                  }
-                  <svg
-                    data-encore-id="icon"
-                    role="img"
-                    aria-hidden="true"
-                    style={{ width: "28px", height: "24px", fill: "#ffffffb3" }}
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M18.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM15 5.5a3.5 3.5 0 1 1 1.006 2.455L9 12l7.006 4.045a3.5 3.5 0 1 1-.938 1.768l-6.67-3.85a3.5 3.5 0 1 1 0-3.924l6.67-3.852A3.513 3.513 0 0 1 15 5.5zm-9.5 5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm13 6.5a1.5 1.5 0 1 0-.001 3 1.5 1.5 0 0 0 .001-3z"></path>
-                  </svg>
-                  <svg
-                    data-encore-id="icon"
-                    role="img"
-                    aria-hidden="true"
-                    style={{ width: "28px", height: "24px", fill: "#ffffffb3" }}
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M10.5 4.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0zm0 15a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0zm0-7.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z"></path>
-                  </svg>
-                </div>
+                {
 
-                <div
-                  style={{
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "50%",
-                    backgroundColor: "#3BE477",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <svg
-                    data-encore-id="icon"
-                    role="img"
-                    aria-hidden="true"
-                    style={{ width: "25px", height: "25px", fill: "black" }}
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="m7.05 3.606 13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"></path>
-                  </svg>
-                </div>
-              </div>
-            </div>
+                  localStorage.getItem('FavoriteId') !== playlistId ?
 
-            {
-              playlistId.length>15?
-              <div style={{width:"100%",height:"auto",display:"flex",justifyContent:"center",alignItems:"center",marginTop:"10px"}}>
-                  <button onClick={()=>{naviagte(`/add/songs/${playlistId}`)}} style={{padding:"10px",height:"40px",fontFamily:"18px",width:"150px",borderRadius:"50px",color:"black",border:"1px solid white",backgroundColor:"white",display:"flex",justifyContent:"center",alignItems:"center"}}>Add songs +</button>
-              </div>
-              :
-              ""
-            }
-          </div>
-
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              padding: "4px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "4px",
-            }}
-          >
-            {playlistData?.songs.map((data) => {
-              return (
-                data.id !== undefined ?
-                <div
-                  className="albums_row"
-                
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "90% 10%",
-                    whiteSpace: "nowrap",
-                    padding: "10px",
-                    borderRadius: "5px",
-                    gap: "10px",
-                  }}
-                >
-                  {/* <div style={{width:"45px",height:"45px",borderRadius:"4px",overflow:"hidden"}}>
-                            <img style={{width:"100%",objectFit:"contain"}} src={data?.image[2].url} alt="" />
-                          </div> */}
+                playlistData?.songs.length !== 0 ? (
                   <div
+                    className="playlist-image"
                     style={{
-                      display: "flex",
-                      flexWrap: "nowrap",
-                      gap: "6px",
-                      alignItems: "center",
+                      aspectRatio: "1/1",
                     }}
-                     onClick={() => {
-                    setSongId(data.id);
-                    setSong(playlistData?.songs)
-                    
-                  }}
                   >
-                    {/* <div style={{width:"45px",height:"45px",borderRadius:"4px",overflow:"hidden"}}> */}
                     <img
                       style={{
-                        width: "45px",
-                        height: "45px",
-                        borderRadius: "3px",
-                        objectFit: "contain",
+                        objectFit: "cover",
+                        width: "100%",
+                        height: "100%",
+                        objectPosition: "center",
                       }}
-                      src={data?.image[2].url}
+                      src={
+                        playlistId.length < 15
+                          ? playlistData?.image[2]?.url
+                          : playlistData?.image[0].url
+                      }
                       alt=""
+                       loading="lazy"
                     />
-                    {/* </div> */}
-
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        whiteSpace: "nowrap",
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        className={data.id === songId ? "Active-audio" : ""}
-                        style={{
-                          width: "100%",
-                          fontSize: "16px",
-                          fontWeight: "400",
-                          fontFamily: "Spotify Circular, sans-serif",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {data.name}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "13px",
-                          width: "100%",
-                          fontWeight: "500",
-                          color: "rgb(155, 153, 153)",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {data.artists.primary.map((artist) => {
-                          return artist.name;
-                        })}
-                      </div>
-                    </div>
                   </div>
+                ) : (
                   <div
+                    className="playlist-image"
                     style={{
-                      display: "grid",
-                      alignItems: "center",
+                      aspectRatio: "1/1",
+                      backgroundColor: "#121212",
+                      display: "flex",
                       justifyContent: "center",
+                      alignItems: "center",
                     }}
-                    onClick={()=>{showmoreInfo(data.id , data.image[2].url,data.name,data.artists.primary[0].name,data.type)}}
                   >
                     <svg
                       data-encore-id="icon"
                       role="img"
                       aria-hidden="true"
-                      style={{ width: "25px", height: "25px", fill: "#fff" }}
+                      data-testid="playlist"
+                      viewBox="0 0 24 24"
+                      style={{ width: "25%", fill: "rgb(127, 127, 127)" }}
+                    >
+                      <path d="M6 3h15v15.167a3.5 3.5 0 1 1-3.5-3.5H19V5H8v13.167a3.5 3.5 0 1 1-3.5-3.5H6V3zm0 13.667H4.5a1.5 1.5 0 1 0 1.5 1.5v-1.5zm13 0h-1.5a1.5 1.5 0 1 0 1.5 1.5v-1.5z"></path>
+                    </svg>
+                  </div>
+
+                )
+
+                :
+                <div
+                className="playlist-image"
+                    style={{
+                      aspectRatio: "1/1",
+                      background:"linear-gradient(to bottom right, #490EF2,#705BE3,#B1D3CF)",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    
+                    }}
+                >
+                        <img
+                      style={{
+                        objectFit: "cover",
+                        width: "100%",
+                        height: "100%",
+                        objectPosition: "center",
+                      }}
+                      src={likedSongs}
+                      alt=""
+                       loading="lazy"
+                    />
+                </div>
+
+      }
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "0px 16px",
+                  gap: "5px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "white",
+                    fontSize: "1.7rem",
+                    fontWeight: "bold",
+                    textWrap: "balance",
+                  }}
+                >
+                  {playlistData?.name}
+                </div>
+                <div
+                  style={{
+                    fontSize: "14px",
+                    color: "#b3b3b3",
+                    textWrap: "pretty",
+                    fontFamily: "sans-serif",
+                  }}
+                >
+                  {playlistData?.description || playlistData?.description}
+                </div>
+                <div style={{ fontSize: "14px" }}>
+                  {playlistData?.songCount || playlistData?.songs.length} songs
+                  🎶 {playlistData?.type || "Private"}
+                </div>
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    height: "60px",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "15px",
+                      alignItems: "center",
+                    }}
+                  >
+                    {playlistId.length < 15 ? (
+                      !fevPlaylist?.find((item) => item.id === playlistId) ||
+                      fevPlaylist?.length === 0 ? (
+                        <svg
+                          data-encore-id="icon"
+                          role="img"
+                          aria-hidden="true"
+                          style={{
+                            width: "28px",
+                            height: "24px",
+                            fill: "#ffffffb3",
+                          }}
+                          viewBox="0 0 24 24"
+                          onClick={() => {
+                            addToFeverite();
+                          }}
+                        >
+                          <path d="M5.21 1.57a6.757 6.757 0 0 1 6.708 1.545.124.124 0 0 0 .165 0 6.741 6.741 0 0 1 5.715-1.78l.004.001a6.802 6.802 0 0 1 5.571 5.376v.003a6.689 6.689 0 0 1-1.49 5.655l-7.954 9.48a2.518 2.518 0 0 1-3.857 0L2.12 12.37A6.683 6.683 0 0 1 .627 6.714 6.757 6.757 0 0 1 5.21 1.57zm3.12 1.803a4.757 4.757 0 0 0-5.74 3.725l-.001.002a4.684 4.684 0 0 0 1.049 3.969l.009.01 7.958 9.485a.518.518 0 0 0 .79 0l7.968-9.495a4.688 4.688 0 0 0 1.049-3.965 4.803 4.803 0 0 0-3.931-3.794 4.74 4.74 0 0 0-4.023 1.256l-.008.008a2.123 2.123 0 0 1-2.9 0l-.007-.007a4.757 4.757 0 0 0-2.214-1.194z"></path>
+                        </svg>
+                      ) : (
+                        <svg
+                          onClick={() => {
+                            removeFevoritePlaylist();
+                          }}
+                          data-encore-id="icon"
+                          role="img"
+                          style={{
+                            width: "28px",
+                            height: "24px",
+                            fill: "#1ed760",
+                          }}
+                          aria-hidden="true"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8.667 1.912a6.257 6.257 0 0 0-7.462 7.677c.24.906.683 1.747 1.295 2.457l7.955 9.482a2.015 2.015 0 0 0 3.09 0l7.956-9.482a6.19 6.19 0 0 0 1.382-5.234l-.49.097.49-.099a6.3 6.3 0 0 0-5.162-4.98h-.002a6.24 6.24 0 0 0-5.295 1.65.623.623 0 0 1-.848 0 6.26 6.26 0 0 0-2.91-1.568z"></path>
+                        </svg>
+                      )
+                    ) : (
+                      ""
+                    )}
+                    <svg
+                      data-encore-id="icon"
+                      role="img"
+                      aria-hidden="true"
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        fill: "#ffffffb3",
+                      }}
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M18.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM15 5.5a3.5 3.5 0 1 1 1.006 2.455L9 12l7.006 4.045a3.5 3.5 0 1 1-.938 1.768l-6.67-3.85a3.5 3.5 0 1 1 0-3.924l6.67-3.852A3.513 3.513 0 0 1 15 5.5zm-9.5 5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm13 6.5a1.5 1.5 0 1 0-.001 3 1.5 1.5 0 0 0 .001-3z"></path>
+                    </svg>
+                    <svg
+                      data-encore-id="icon"
+                      role="img"
+                      aria-hidden="true"
+                      style={{
+                        width: "30x",
+                        height: "30px",
+                        fill: "#ffffffb3",
+                      }}
                       viewBox="0 0 24 24"
                     >
                       <path d="M10.5 4.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0zm0 15a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0zm0-7.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z"></path>
                     </svg>
+
+                    { playlistId.length > 15 && localStorage.getItem("FavoriteId") === songId ? (
+                     
+                      
+                      <>
+                      <div
+                        style={{
+                          width: "auto",
+                          padding: "0px 10px",
+                          height: "auto",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent:"start",
+                          gap:"15px"
+                        }}
+                      >
+                        <button
+                          onClick={() => {
+                            navigate(`/edit/playlist/${playlistId}`);
+                          }}
+                          style={{
+                            padding: "5px",
+                            height: "35px",
+                            fontFamily: "18px",
+                            width: "60px",
+                            borderRadius: "50px",
+                            border: "1px solid gray",
+                            backgroundColor: "transparent",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            color: "white",
+                          }}
+                        >
+                          Edit
+                        </button>
+                      <div style={{width:"30px",height:"30px"}} onClick={deleteCreatedPlaylist}>
+                           <img style={{width:"30px",height:"30px"}} src={deletePlaylist} alt="" srcset="" />
+                      </div>
+                      </div>
+
+                    </>
+
+                    ) : (
+                      ""
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      backgroundColor: "#3BE477",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={() => {
+                      if (
+                        localStorage.getItem("isplaylistSong") !==
+                        playlistId + songId
+                      ) {
+                        setSong(playlistData?.songs);
+                        setSongId(playlistData?.songs[0].id);
+                        //  document.getElementById('playlist-play').style.display = "none"
+                        //  document.getElementById('playlist-pause').style.display = "block"
+                        localStorage.setItem(
+                          "isplaylistSong",
+                          playlistId + playlistData?.songs[0].id
+                        );
+                      } else {
+                        audio.paused ? audio.play() : audio.pause();
+                        if (audio.paused) {
+                          document.getElementById(
+                            "playlist-play"
+                          ).style.display = "block";
+                          document.getElementById(
+                            "playlist-pause"
+                          ).style.display = "none";
+                        } else {
+                          document.getElementById(
+                            "playlist-play"
+                          ).style.display = "none";
+                          document.getElementById(
+                            "playlist-pause"
+                          ).style.display = "block";
+                        }
+                      }
+                    }}
+                  >
+                    <svg
+                      id="playlist-play"
+                      data-encore-id="icon"
+                      role="img"
+                      aria-hidden="true"
+                      style={{ width: "25px", height: "25px", fill: "black" }}
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="m7.05 3.606 13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"></path>
+                    </svg>
+
+                    <svg
+                      id="playlist-pause"
+                      data-encore-id="icon"
+                      style={{
+                        width: "25px",
+                        height: "25px",
+                        fill: "black",
+                        display: "none",
+                      }}
+                      role="img"
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M5.7 3a.7.7 0 0 0-.7.7v16.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V3.7a.7.7 0 0 0-.7-.7zm10 0a.7.7 0 0 0-.7.7v16.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V3.7a.7.7 0 0 0-.7-.7z"></path>
+                    </svg>
                   </div>
                 </div>
-                :""
-              );
-            })
-            }
+              </div>
+
+              {playlistId.length > 15 && localStorage.getItem('FavoriteId') !== playlistId  ? (
+                <>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        navigate(`/add/songs/${playlistId}`);
+                      }}
+                      style={{
+                        padding: "10px",
+                        height: "40px",
+                        fontFamily: "18px",
+                        width: "150px",
+                        borderRadius: "50px",
+                        color: "black",
+                        border: "1px solid white",
+                        backgroundColor: "white",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      Add songs +
+                    </button>
+                  </div>
+                </>
+              ) : (
+                ""
+              )}
+            </div>
+
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                padding: "4px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+              }}
+            >
+              {playlistData?.songs.map((data) => {
+                return data.id !== undefined ? (
+                  <div
+                    className="albums_row"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "90% 10%",
+                      whiteSpace: "nowrap",
+                      padding: "10px",
+                      borderRadius: "5px",
+                      gap: "10px",
+                    }}
+                  >
+                    {/* <div style={{width:"45px",height:"45px",borderRadius:"4px",overflow:"hidden"}}>
+                            <img style={{width:"100%",objectFit:"contain"}} src={data?.image[2].url} alt="" />
+                          </div> */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "nowrap",
+                        gap: "6px",
+                        alignItems: "center",
+                      }}
+                      onClick={() => {
+                        setSongId(data.id);
+                        setSong(playlistData?.songs);
+                        localStorage.setItem(
+                          "isplaylistSong",
+                          playlistData?.id + data.id
+                        );
+                      }}
+                    >
+                      {/* <div style={{width:"45px",height:"45px",borderRadius:"4px",overflow:"hidden"}}> */}
+                      <img
+                        style={{
+                          width: "45px",
+                          height: "45px",
+                          borderRadius: "3px",
+                          objectFit: "contain",
+                        }}
+                        src={data?.image[2].url}
+                        alt=""
+                        loading="lazy"
+                      />
+                      {/* </div> */}
+
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          whiteSpace: "nowrap",
+                          textOverflow: "ellipsis",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          className={data.id === songId ? "Active-audio" : ""}
+                          style={{
+                            width: "100%",
+                            fontSize: "16px",
+                            fontWeight: "400",
+                            fontFamily: "Spotify Circular, sans-serif",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}
+                        >
+                          {data.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: "13px",
+                            width: "100%",
+                            fontWeight: "500",
+                            color: "rgb(155, 153, 153)",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis"
+                          }}
+                        >
+                          {data.artists.primary.map((artist) => {
+                            return artist.name;
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      onClick={() => {
+                        showmoreInfo(
+                          data.id,
+                          data.image[2].url,
+                          data.name,
+                          data.artists.primary[0],
+                          data.type
+                        );
+                      }}
+                    >
+                      <svg
+                        data-encore-id="icon"
+                        role="img"
+                        aria-hidden="true"
+                        style={{ width: "25px", height: "25px", fill: "#fff" }}
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M10.5 4.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0zm0 15a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0zm0-7.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                );
+              })}
+            </div>
           </div>
-        </div>
-         <div id="songInfo" style={{width:"100%",height:"100%",position:"fixed",top:"0",backgroundColor:"rgb(0 0 0 / 64%)",backdropFilter:"blur(10px)",zIndex:"2000",display:"none",gridTemplateRows:"90% 10%",padding:"15px 15px"}}>
-              
-              <div style={{display:"flex",justifyContent:"center",flexDirection:"column",gap:"50px"}}>
+          <div
+            id="songInfo"
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "fixed",
+              top: "0",
+              backgroundColor: "rgb(0 0 0 / 64%)",
+              backdropFilter: "blur(10px)",
+              zIndex: "2000",
+              display: "none",
+              gridTemplateRows: "90% 10%",
+              padding: "15px 15px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                flexDirection: "column",
+                gap: "50px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  gap: "17px",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <img
+                  id="song-img"
+                  style={{ width: "65px", height: "65px" }}
+                  src=""
+                  alt=""
+                />
+                <div style={{ alignItems: "center", gap: "0px" }}>
+                  <div
+                    id="song-title"
+                    style={{ fontSize: "18px", fontFamily: "sans-serif" }}
+                  ></div>
 
-               <div style={{display:"flex",gap:"17px",alignItems:"center",width:"100%"}}>
-                   <img id="song-img" style={{width:"65px",height:"65px"}} src="" alt="" />
-                   <div style={{alignItems:"center",gap:"0px"}}>
-                        
-                        <div id="song-title" style={{fontSize:"18px",fontFamily:"sans-serif"}}></div>
-                      
-                        <div id="song-artist" style={{fontSize:"14px",fontWeight:"400",color:"#7c7a7a"}}></div>
-                   </div>
-               </div>
-               
-              <div style={{width:"100%",display:"flex",flexDirection:"column",gap:"30px"}}>
-                   <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                    <svg style={{width:"24px",height:"24px",fill:"white"}} data-encore-id="icon" role="img" aria-hidden="true" class="e-9921-icon e-9921-baseline" viewBox="0 0 24 24"><path d="M5.21 1.57a6.757 6.757 0 0 1 6.708 1.545.124.124 0 0 0 .165 0 6.741 6.741 0 0 1 5.715-1.78l.004.001a6.802 6.802 0 0 1 5.571 5.376v.003a6.689 6.689 0 0 1-1.49 5.655l-7.954 9.48a2.518 2.518 0 0 1-3.857 0L2.12 12.37A6.683 6.683 0 0 1 .627 6.714 6.757 6.757 0 0 1 5.21 1.57zm3.12 1.803a4.757 4.757 0 0 0-5.74 3.725l-.001.002a4.684 4.684 0 0 0 1.049 3.969l.009.01 7.958 9.485a.518.518 0 0 0 .79 0l7.968-9.495a4.688 4.688 0 0 0 1.049-3.965 4.803 4.803 0 0 0-3.931-3.794 4.74 4.74 0 0 0-4.023 1.256l-.008.008a2.123 2.123 0 0 1-2.9 0l-.007-.007a4.757 4.757 0 0 0-2.214-1.194z"></path></svg>
-                    <div style={{fontSize:"17px"}}>Like</div>
-                   </div>
-
-                   <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                    <svg style={{width:"24px",height:"24px",fill:"white"}} data-encore-id="icon" role="img" aria-hidden="true" class="e-9921-icon e-9921-baseline" viewBox="0 0 24 24"><path d="M18.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM15 5.5a3.5 3.5 0 1 1 1.006 2.455L9 12l7.006 4.045a3.5 3.5 0 1 1-.938 1.768l-6.67-3.85a3.5 3.5 0 1 1 0-3.924l6.67-3.852A3.513 3.513 0 0 1 15 5.5zm-9.5 5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm13 6.5a1.5 1.5 0 1 0-.001 3 1.5 1.5 0 0 0 .001-3z"></path></svg>
-                    <div style={{fontSize:"17px"}}>Share</div>
-                   </div>
-
-                   <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-                   <svg style={{width:"24px",height:"24px",fill:"white"}} data-enco re-id="icon" role="img" aria-hidden="true" class="e-9921-icon e-9921-baseline" viewBox="0 0 24 24"><path d="M13.363 10.4742L12.842 11.0992C12.6086 11.379 12.4393 11.7065 12.3458 12.0587C12.2523 12.4109 12.2369 12.7793 12.3007 13.1381C12.3645 13.4968 12.506 13.8373 12.7153 14.1356C12.9245 14.434 13.1964 14.683 13.512 14.8652L13.797 15.0292C14.1345 14.4382 14.57 13.909 15.085 13.4642L14.512 13.1332C14.4489 13.0967 14.3945 13.0469 14.3527 12.9873C14.3109 12.9276 14.2826 12.8596 14.2698 12.7878C14.2571 12.7161 14.2601 12.6425 14.2788 12.572C14.2975 12.5016 14.3314 12.4362 14.378 12.3802L14.898 11.7562C15.9717 10.5455 16.6172 9.01512 16.735 7.40118C16.7841 6.56095 16.686 5.71858 16.445 4.91216C16.1971 4.15361 15.7913 3.45625 15.2542 2.86605C14.717 2.27585 14.0609 1.80623 13.329 1.48818C12.2258 1.00309 10.9984 0.875524 9.81909 1.12338C8.63974 1.37123 7.56757 1.98205 6.75299 2.87017C6.21741 3.46169 5.812 4.15906 5.56299 4.91717C5.32198 5.72359 5.22386 6.56595 5.27301 7.40618C5.3909 9.02058 6.03674 10.5513 7.11096 11.7622L7.62897 12.3842C7.6756 12.4401 7.70947 12.5056 7.72815 12.576C7.74683 12.6465 7.74989 12.7201 7.73712 12.7918C7.72436 12.8636 7.69606 12.9316 7.65424 12.9913C7.61241 13.0509 7.55808 13.1007 7.495 13.1372L3.5 15.4442C2.73992 15.883 2.10876 16.5142 1.66992 17.2743C1.23108 18.0343 1.00002 18.8965 1 19.7742V22.0052H14.54C14.0162 21.4229 13.6119 20.7433 13.35 20.0052H3V19.7742C2.99966 19.2472 3.13811 18.7295 3.40143 18.2731C3.66475 17.8167 4.04366 17.4377 4.5 17.1742L8.495 14.8672C8.81056 14.685 9.08246 14.436 9.29169 14.1376C9.50092 13.8393 9.64241 13.4988 9.70624 13.1401C9.77006 12.7813 9.75469 12.4129 9.66119 12.0607C9.5677 11.7085 9.39833 11.3811 9.16498 11.1012L8.64398 10.4762C8.03916 9.82817 7.61201 9.03491 7.40387 8.17327C7.19573 7.31163 7.21367 6.41081 7.45599 5.55816C7.61624 5.06462 7.8782 4.61019 8.22498 4.22418C8.57805 3.8391 9.00736 3.53165 9.4856 3.32131C9.96383 3.11098 10.4805 3.00234 11.003 3.00234C11.5254 3.00234 12.0422 3.11098 12.5204 3.32131C12.9986 3.53165 13.4279 3.8391 13.781 4.22418C14.1271 4.61049 14.3887 5.06485 14.549 5.55816C14.7059 6.11997 14.769 6.70382 14.736 7.28619C14.6432 8.47138 14.1604 9.59243 13.363 10.4742ZM21.004 9.30117C20.7388 9.30117 20.4844 9.40654 20.2969 9.59408C20.1093 9.78162 20.004 10.036 20.004 10.3012V14.9672H19.004C18.4106 14.9672 17.8306 15.1431 17.3373 15.4728C16.8439 15.8024 16.4594 16.2709 16.2324 16.8191C16.0053 17.3673 15.9459 17.9705 16.0616 18.5525C16.1774 19.1344 16.4631 19.6689 16.8827 20.0885C17.3022 20.5081 17.8368 20.7938 18.4187 20.9095C19.0006 21.0253 19.6039 20.9659 20.152 20.7388C20.7002 20.5118 21.1688 20.1272 21.4984 19.6339C21.8281 19.1405 22.004 18.5605 22.004 17.9672V10.3012C22.004 10.1696 21.9781 10.0393 21.9276 9.91781C21.8772 9.79629 21.8032 9.68591 21.71 9.59301C21.6168 9.50011 21.5063 9.42651 21.3846 9.37643C21.2629 9.32635 21.1326 9.30078 21.001 9.30117H21.004ZM20.004 17.9672C20.004 18.165 19.9453 18.3583 19.8354 18.5228C19.7256 18.6872 19.5694 18.8154 19.3867 18.891C19.2039 18.9667 19.0029 18.9865 18.8089 18.948C18.6149 18.9094 18.4367 18.8141 18.2969 18.6743C18.157 18.5344 18.0618 18.3562 18.0232 18.1623C17.9846 17.9683 18.0045 17.7672 18.0801 17.5845C18.1558 17.4018 18.284 17.2456 18.4484 17.1357C18.6129 17.0258 18.8062 16.9672 19.004 16.9672H20.004V17.9672Z"></path></svg>
-                    <div style={{fontSize:"17px"}}>View artist</div>
-                   </div>
-                   <div 
-                   id="View-album"
-                   style={{display:"flex",alignItems:"center",gap:"10px"}} 
-                   onClick={()=>{
-                       naviagte(`/album/${albumId}`)
-                        
-                   }}>
-                    <svg style={{width:"24px",height:"24px",fill:"white"}} data-encore-id="icon" role="img" aria-hidden="true" class="e-9921-icon e-9921-baseline" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM1 12C1 5.925 5.925 1 12 1s11 4.925 11 11-4.925 11-11 11S1 18.075 1 12z"></path><path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-4 2a4 4 0 1 1 8 0 4 4 0 0 1-8 0z"></path></svg>
-                    <div style={{fontSize:"17px"}}>View album</div>
-                   </div>
-
+                  <div
+                    id="song-artist"
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "400",
+                      color: "#7c7a7a",
+                    }}
+                  ></div>
+                </div>
               </div>
-               
 
-               
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "30px",
+                }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <svg
+                    style={{ width: "24px", height: "24px", fill: "white" }}
+                    data-encore-id="icon"
+                    role="img"
+                    aria-hidden="true"
+                    class="e-9921-icon e-9921-baseline"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M5.21 1.57a6.757 6.757 0 0 1 6.708 1.545.124.124 0 0 0 .165 0 6.741 6.741 0 0 1 5.715-1.78l.004.001a6.802 6.802 0 0 1 5.571 5.376v.003a6.689 6.689 0 0 1-1.49 5.655l-7.954 9.48a2.518 2.518 0 0 1-3.857 0L2.12 12.37A6.683 6.683 0 0 1 .627 6.714 6.757 6.757 0 0 1 5.21 1.57zm3.12 1.803a4.757 4.757 0 0 0-5.74 3.725l-.001.002a4.684 4.684 0 0 0 1.049 3.969l.009.01 7.958 9.485a.518.518 0 0 0 .79 0l7.968-9.495a4.688 4.688 0 0 0 1.049-3.965 4.803 4.803 0 0 0-3.931-3.794 4.74 4.74 0 0 0-4.023 1.256l-.008.008a2.123 2.123 0 0 1-2.9 0l-.007-.007a4.757 4.757 0 0 0-2.214-1.194z"></path>
+                  </svg>
+                  <div style={{ fontSize: "17px" }}>Like</div>
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <svg
+                    style={{ width: "24px", height: "24px", fill: "white" }}
+                    data-encore-id="icon"
+                    role="img"
+                    aria-hidden="true"
+                    class="e-9921-icon e-9921-baseline"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M18.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM15 5.5a3.5 3.5 0 1 1 1.006 2.455L9 12l7.006 4.045a3.5 3.5 0 1 1-.938 1.768l-6.67-3.85a3.5 3.5 0 1 1 0-3.924l6.67-3.852A3.513 3.513 0 0 1 15 5.5zm-9.5 5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm13 6.5a1.5 1.5 0 1 0-.001 3 1.5 1.5 0 0 0 .001-3z"></path>
+                  </svg>
+                  <div style={{ fontSize: "17px" }}>Share</div>
+                </div>
+
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                  onClick={()=>{navigate(`/artist/${artistId}`)}}
+                >
+                  <svg
+                    style={{ width: "24px", height: "24px", fill: "white" }}
+                    data-enco
+                    re-id="icon"
+                    role="img"
+                    aria-hidden="true"
+                    class="e-9921-icon e-9921-baseline"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M13.363 10.4742L12.842 11.0992C12.6086 11.379 12.4393 11.7065 12.3458 12.0587C12.2523 12.4109 12.2369 12.7793 12.3007 13.1381C12.3645 13.4968 12.506 13.8373 12.7153 14.1356C12.9245 14.434 13.1964 14.683 13.512 14.8652L13.797 15.0292C14.1345 14.4382 14.57 13.909 15.085 13.4642L14.512 13.1332C14.4489 13.0967 14.3945 13.0469 14.3527 12.9873C14.3109 12.9276 14.2826 12.8596 14.2698 12.7878C14.2571 12.7161 14.2601 12.6425 14.2788 12.572C14.2975 12.5016 14.3314 12.4362 14.378 12.3802L14.898 11.7562C15.9717 10.5455 16.6172 9.01512 16.735 7.40118C16.7841 6.56095 16.686 5.71858 16.445 4.91216C16.1971 4.15361 15.7913 3.45625 15.2542 2.86605C14.717 2.27585 14.0609 1.80623 13.329 1.48818C12.2258 1.00309 10.9984 0.875524 9.81909 1.12338C8.63974 1.37123 7.56757 1.98205 6.75299 2.87017C6.21741 3.46169 5.812 4.15906 5.56299 4.91717C5.32198 5.72359 5.22386 6.56595 5.27301 7.40618C5.3909 9.02058 6.03674 10.5513 7.11096 11.7622L7.62897 12.3842C7.6756 12.4401 7.70947 12.5056 7.72815 12.576C7.74683 12.6465 7.74989 12.7201 7.73712 12.7918C7.72436 12.8636 7.69606 12.9316 7.65424 12.9913C7.61241 13.0509 7.55808 13.1007 7.495 13.1372L3.5 15.4442C2.73992 15.883 2.10876 16.5142 1.66992 17.2743C1.23108 18.0343 1.00002 18.8965 1 19.7742V22.0052H14.54C14.0162 21.4229 13.6119 20.7433 13.35 20.0052H3V19.7742C2.99966 19.2472 3.13811 18.7295 3.40143 18.2731C3.66475 17.8167 4.04366 17.4377 4.5 17.1742L8.495 14.8672C8.81056 14.685 9.08246 14.436 9.29169 14.1376C9.50092 13.8393 9.64241 13.4988 9.70624 13.1401C9.77006 12.7813 9.75469 12.4129 9.66119 12.0607C9.5677 11.7085 9.39833 11.3811 9.16498 11.1012L8.64398 10.4762C8.03916 9.82817 7.61201 9.03491 7.40387 8.17327C7.19573 7.31163 7.21367 6.41081 7.45599 5.55816C7.61624 5.06462 7.8782 4.61019 8.22498 4.22418C8.57805 3.8391 9.00736 3.53165 9.4856 3.32131C9.96383 3.11098 10.4805 3.00234 11.003 3.00234C11.5254 3.00234 12.0422 3.11098 12.5204 3.32131C12.9986 3.53165 13.4279 3.8391 13.781 4.22418C14.1271 4.61049 14.3887 5.06485 14.549 5.55816C14.7059 6.11997 14.769 6.70382 14.736 7.28619C14.6432 8.47138 14.1604 9.59243 13.363 10.4742ZM21.004 9.30117C20.7388 9.30117 20.4844 9.40654 20.2969 9.59408C20.1093 9.78162 20.004 10.036 20.004 10.3012V14.9672H19.004C18.4106 14.9672 17.8306 15.1431 17.3373 15.4728C16.8439 15.8024 16.4594 16.2709 16.2324 16.8191C16.0053 17.3673 15.9459 17.9705 16.0616 18.5525C16.1774 19.1344 16.4631 19.6689 16.8827 20.0885C17.3022 20.5081 17.8368 20.7938 18.4187 20.9095C19.0006 21.0253 19.6039 20.9659 20.152 20.7388C20.7002 20.5118 21.1688 20.1272 21.4984 19.6339C21.8281 19.1405 22.004 18.5605 22.004 17.9672V10.3012C22.004 10.1696 21.9781 10.0393 21.9276 9.91781C21.8772 9.79629 21.8032 9.68591 21.71 9.59301C21.6168 9.50011 21.5063 9.42651 21.3846 9.37643C21.2629 9.32635 21.1326 9.30078 21.001 9.30117H21.004ZM20.004 17.9672C20.004 18.165 19.9453 18.3583 19.8354 18.5228C19.7256 18.6872 19.5694 18.8154 19.3867 18.891C19.2039 18.9667 19.0029 18.9865 18.8089 18.948C18.6149 18.9094 18.4367 18.8141 18.2969 18.6743C18.157 18.5344 18.0618 18.3562 18.0232 18.1623C17.9846 17.9683 18.0045 17.7672 18.0801 17.5845C18.1558 17.4018 18.284 17.2456 18.4484 17.1357C18.6129 17.0258 18.8062 16.9672 19.004 16.9672H20.004V17.9672Z"></path>
+                  </svg>
+                  <div style={{ fontSize: "17px" }}>View artist</div>
+                </div>
+                <div
+                  id="View-album"
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                  onClick={() => {
+                    navigate(`/album/${albumId}`);
+                  }}
+                >
+                  <svg
+                    style={{ width: "24px", height: "24px", fill: "white" }}
+                    data-encore-id="icon"
+                    role="img"
+                    aria-hidden="true"
+                    class="e-9921-icon e-9921-baseline"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM1 12C1 5.925 5.925 1 12 1s11 4.925 11 11-4.925 11-11 11S1 18.075 1 12z"></path>
+                    <path d="M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-4 2a4 4 0 1 1 8 0 4 4 0 0 1-8 0z"></path>
+                  </svg>
+                  <div style={{ fontSize: "17px" }}>View album</div>
+                </div>
               </div>
+            </div>
 
-               <footer onClick={()=>{document.getElementById('songInfo').style.display="none"}} style={{width:"100%",textAlign:"center",color:"white",position:"absolute",bottom:"0px",display:"flex",alignItems:"center",justifyContent:"center",padding:"10px 10px"}}>
-                     Close
-               </footer>
-        </div>
+            <footer
+              onClick={() => {
+                document.getElementById("songInfo").style.display = "none";
+              }}
+              style={{
+                width: "100%",
+                textAlign: "center",
+                color: "white",
+                position: "absolute",
+                bottom: "0px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "10px 10px",
+              }}
+            >
+              Close
+            </footer>
+          </div>
         </>
       ) : (
         <div
@@ -708,8 +1045,6 @@ function Playlist() {
           <div className="loader">
             <div className="loader1"></div>
           </div>
-
-               
         </div>
       )}
     </>

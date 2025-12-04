@@ -237,6 +237,7 @@ function Add_songs() {
                         }
                         src={data?.image[2].url}
                         alt=""
+                        loading="lazy"
                       />
                       {/* </div> */}
 

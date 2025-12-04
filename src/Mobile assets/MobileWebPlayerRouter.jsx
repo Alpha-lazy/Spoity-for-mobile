@@ -15,6 +15,10 @@ import Library from "./Pages/Library.jsx";
 import Creat_playlist from "./Pages/Creat_playlist.jsx";
 import Add_songs from "./Pages/Add_songs.jsx";
 import Add_album_songs from "./Pages/Add_album_songs.jsx";
+import Edit_playlist from "./Pages/Edit_playlist.jsx";
+import Generate_playlist from "./Pages/Generate_playlist.jsx";
+import Artist from "./Pages/Artist.jsx";
+import Signup from "./Pages/Signup.jsx";
 
 function MobileWebPlayerRouter() {
 
@@ -25,6 +29,7 @@ function MobileWebPlayerRouter() {
         <Route path="/" element={<Home />} />
         <Route path="/album/:alumId" element={<Album />} />
         <Route path="/playlist/:playlistId" element={<Playlist />} />
+        <Route path="/artist/:artistId" element={<Artist/>} />
 
         {/* search */}
         <Route path="/search" element={<Search />} />
@@ -44,15 +49,23 @@ function MobileWebPlayerRouter() {
         <Route path="/library" element={<Library/>}/>
         
 
-        {/* authentication */}
+      {/* edit private playlist */}
+        
+        <Route path="/edit/playlist/:playlistId" element={<Edit_playlist/>}/>
+
+
+      {/* authentication */}
         
       </Routes>
       
-      {!location.pathname.startsWith("/auth")&& !location.pathname.startsWith("/create")&& <Footer />}
+      {!location.pathname.startsWith("/auth")&& !location.pathname.startsWith("/create")&& !location.pathname.startsWith("/edit")&& <Footer />}
       {/* <Footer /> */}
       <Routes>
         <Route path="/auth/login" element={<Login/>}/>
+        <Route path="/auth/signup" element={<Signup/>}/>
         <Route path="/create/playlist" element={<Creat_playlist/>}/>
+        <Route path="/edit/playlist" element={<Edit_playlist/>}/>
+        <Route path="/generate/playlist" element={<Generate_playlist/>}/>
       </Routes> 
       
     </>

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom';
+import aiIcon from "../../Images/ai_icon.png"
+import likedSongs from '../../Images/likedsongs.jpg'
 
 function Library() {
     const [fevPlaylist,setFevPlaylist] = useState();
@@ -92,10 +94,15 @@ const fetchPrivatePlaylist = async() =>{
                   <svg onClick={()=>{navigat("/create/playlist")}} style={{width:"22px",height:"22px",fill:"#fff"}} data-encore-id="icon" role="img" aria-hidden="true"  viewBox="0 0 16 16" width="16px" height="16px"><path d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75z"></path></svg> 
               </div>
               </div>
-              <div style={{width:"100%",height:"100%",alignItems:"center"}}>
+              <div style={{width:"100%",height:"100%",alignItems:"center",display:"flex",gap:"15px"}}>
                  <button style={{display:'flex',justifyContent:"center",alignItems:"center",border:"none",width:"100px",height:"40px",borderRadius:"30px",backgroundColor:"#1f1f1f",fontSize:"14px"}}>
                       Playlist
                  </button>
+
+                 <button onClick={()=>{navigat("/generate/playlist")}} style={{display:'flex',justifyContent:"center",alignItems:"center",gap:"10px",border:"none",width:"auto",height:"35px",borderRadius:"30px",backgroundColor:"#ffffffff",color:"black",fontSize:"14px", padding:"0px 10px"}}>
+                      Generate <img src={aiIcon} style={{width:"15px",height:"15px"}} alt="" srcset="" />
+                 </button>
+
               </div>
         </header>
         <div style={{padding:"30px 20px",width:"100%",display:"flex",flexDirection:"column",gap:"15px",backgroundColor:"#121212"}}>
@@ -119,6 +126,13 @@ const fetchPrivatePlaylist = async() =>{
                 createdPlaylist?.map((data)=>{
                     return <div style={{display:"flex",gap:"15px",width:"100%",alignItems:"center",overflow:"hidden"}} onClick={()=>{navigat(`/playlist/${data.playlistId}`)}}>
                              {
+
+                              localStorage.getItem("FavoriteId") === data.playlistId ?
+                               <div style={{width:"65px",height:"65px"}}>
+                            <img style={{width:"65px",height:"65px",borderRadius:"2px"}} src={likedSongs} alt="" />
+                            </div>
+                             
+                              :(
                               data.imageUrl.length !==0?
                               data.imageUrl.length >3?
                            <div style={{width:"77px",height:"65px",display:"grid",gridTemplateColumns:"1fr 1fr",gridTemplateRows:"1f 1f",gap:"0px"}}>
@@ -144,6 +158,7 @@ const fetchPrivatePlaylist = async() =>{
                             <div style={{width:"78px",height:"65px",backgroundColor:"#1f1f1f",display:"flex",justifyContent:"center",alignItems:"center"}}>
                                 <svg data-encore-id="icon" role="img" aria-hidden="true" data-testid="playlist" viewBox="0 0 24 24" style={{width: "50%",fill:"rgb(127, 127, 127)"}}><path d="M6 3h15v15.167a3.5 3.5 0 1 1-3.5-3.5H19V5H8v13.167a3.5 3.5 0 1 1-3.5-3.5H6V3zm0 13.667H4.5a1.5 1.5 0 1 0 1.5 1.5v-1.5zm13 0h-1.5a1.5 1.5 0 1 0 1.5 1.5v-1.5z"></path></svg>
                             </div>
+                              )
                             }
                            <div style={{color:"white",fontSize:"16px",fontWeight:"bold",display:"flex",flexDirection:"column",textWrap:"nowrap",whiteSpace:"break-spaces",textOverflow:"ellipsis",width:"90%"}}>
                             {data.name}

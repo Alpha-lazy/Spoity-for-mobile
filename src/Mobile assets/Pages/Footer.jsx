@@ -2,22 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useData } from "../../Pages/DataContext";
 import axios from "axios";
-import musicNote from "../../Images/music-note.svg";
-import Login from "../../Pages/Login";
+import toast from "react-hot-toast";
 
 function Footer() {
   const location = useLocation();
-  const { songId, audio, song, setSongId } = useData();
+  const { songId, audio, song, setSongId, globalplaylistId } = useData();
   const [currSong, setCurrSong] = useState();
   const [currIndex, setCurrIndex] = useState();
   const [shuffledSongs, setShuffledSongs] = useState();
   const [lyrics, setLyrics] = useState();
-  const canvasRef = useRef(null);
-  const imageRef = useRef(null);
-  const [backgroundColor, setBackgroundColor] = useState("");
+  var isFevorite = false;
   var currentLyricIndex = 0;
 
-  // retrive lyrics
+  // Retrieve lyrics
   async function retriveLyrics(name, artists, duration) {
     let convertdDuration = convertToMMSS(Math.floor(duration));
     let data = artists.map((artist) => {
@@ -48,7 +45,6 @@ function Footer() {
       const container = document.getElementById("lyrics-container");
       container.innerHTML = "";
 
-      // Create lyric elements
       response.data?.forEach((lyric) => {
         const div = document.createElement("div");
         div.className = "lyric-line";
@@ -86,7 +82,6 @@ function Footer() {
         const container = document.getElementById("lyrics-container");
         container.innerHTML = "";
 
-        // Create lyric elements
         response.data?.forEach((lyric) => {
           const div = document.createElement("div");
           div.className = "lyric-line";
@@ -103,25 +98,12 @@ function Footer() {
       url: `https://jiosavan-api2.vercel.app/api/songs/${id}`,
     });
 
-    const suggestion = await axios.request({
-      method: "GET",
-      url: `https://jiosavan-api2.vercel.app/api/songs/${id}`,
-    });
-
     // set curr song
-    // document.getElementById(
-    //   "progressBar"
-    // ).style.background = `linear-gradient(to right,rgb(255, 255, 255) $0%,#80808094 0%)`;
-    // document.getElementById("progressBar").value =0;
-    setCurrSong(responce.data.data[0]);
+
     let src = responce.data.data[0].downloadUrl[3].url;
     audio.src = src;
- 
-  
-    
-   
-    audio.play()
-  
+    setCurrSong(responce.data.data[0]);
+    audio.play();
 
     // set average color to mini player
     document.getElementById("playerImg").src = await responce.data.data[0]
@@ -136,7 +118,10 @@ function Footer() {
     ).style.backgroundColor = `${color.rgb}`;
     document.getElementById(
       "big_Player"
-    ).style.background = `linear-gradient(to bottom, ${color.rgb}, #121212)`;
+    ).style.background = `linear-gradient(to bottom, ${color.rgb},#121212)`;
+    // document.getElementById(
+    //   "big_Player"
+    // ).style.background = `linear-gradient(to bottom, ${color.rgb}, #121212)`;
     // ).style.backgroundColor = ` ${getDominantColor(
     //   document.getElementById("playerImg")
     // ) }`;
@@ -212,7 +197,7 @@ function Footer() {
     };
   }
 
-  // convert second to minute
+  // Convert seconds to MM:SS
   function convertToMMSS(seconds) {
     // Calculate minutes
     const minutes = Math.floor(seconds / 60);
@@ -232,8 +217,10 @@ function Footer() {
     }
   }, []);
 
-  // call the plasong image and setInterval
+  // Play song image and setInterval
   useEffect(() => {
+    localStorage.setItem("Current Song", songId);
+
     playSong(songId).then(() => {
       setInterval(() => {
         if (document.getElementById("player-sickbar") !== null) {
@@ -271,7 +258,6 @@ function Footer() {
         }
       }, 1000);
     });
-    localStorage.setItem("Current Song", songId);
   }, [songId]);
 
   // on audio load show audio duration
@@ -286,7 +272,6 @@ function Footer() {
   // toggle play pause using useEffect
   useEffect(() => {
     if (currSong) {
-       
       if (audio.played) {
         document.getElementById("pause").style.display = "none";
         document.getElementById("play").style.display = "block";
@@ -294,26 +279,21 @@ function Footer() {
         document.getElementById("pause").style.display = "block";
         document.getElementById("play").style.display = "none";
       }
-    
     }
   }, [audio.played]);
 
-  // toggle play pause utton svg
+  // Toggle play/pause button svg
   function togglePlaypause() {
     if (audio.paused) {
-          
-   
-    audio.play()
-  
+      audio.play();
+
       document.getElementById("pause").style.display = "none";
       document.getElementById("play").style.display = "block";
       document.getElementById("big-play").style.display = "block";
       document.getElementById("big-pause").style.display = "none";
     } else {
-          
-  
-    audio.pause()
-  
+      audio.pause();
+
       document.getElementById("pause").style.display = "block";
       document.getElementById("play").style.display = "none";
       document.getElementById("big-play").style.display = "none";
@@ -321,14 +301,12 @@ function Footer() {
     }
   }
 
-  // change the value of big player progress bar
+  // Change big player progress bar value
   function Progress(e) {
- 
     audio.currentTime = Math.floor((e.target.value / 100) * audio.duration);
-  
   }
 
-  // shuffle songs
+  // Shuffle songs
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -337,7 +315,7 @@ function Footer() {
     return array;
   }
 
-  // next song
+  // Next song
   const next = () => {
     let index = song.findIndex((item) => item.id === currSong?.id);
     setCurrIndex(index + 1);
@@ -346,6 +324,7 @@ function Footer() {
       if (index < song.length) {
         let nextSong = song[index + 1];
         setSongId(nextSong?.id);
+        localStorage.setItem("isplaylistSong", globalplaylistId + nextSong?.id);
       }
     } else {
       let shuffleindex = shuffledSongs.findIndex(
@@ -356,16 +335,18 @@ function Footer() {
         let nextSong = shuffledSongs[shuffleindex + 1];
 
         setSongId(nextSong?.id);
+        localStorage.setItem("isplaylistSong", globalplaylistId + nextSong?.id);
       }
       if (shuffleindex === shuffledSongs.length - 1) {
         // If we reach the end of the shuffled list, loop back to the start
         let nextSong = shuffledSongs[0];
         setSongId(nextSong?.id);
+        localStorage.setItem("isplaylistSong", globalplaylistId + nextSong?.id);
       }
     }
   };
 
-  // prev song
+  // Previous song
   const prev = async () => {
     console.log(shuffledSongs);
 
@@ -376,6 +357,7 @@ function Footer() {
       if (index > -1) {
         let nextSong = song[index - 1];
         setSongId(nextSong?.id);
+        localStorage.setItem("isplaylistSong", globalplaylistId + nextSong?.id);
       }
     } else {
       let shuffleindex = shuffledSongs.findIndex(
@@ -385,18 +367,20 @@ function Footer() {
       if (shuffleindex < shuffledSongs.length) {
         let nextSong = shuffledSongs[shuffleindex - 1];
         setSongId(nextSong?.id);
+        localStorage.setItem("isplaylistSong", globalplaylistId + nextSong?.id);
       }
     }
   };
 
-  // audio ended
+  // Audio ended
 
-  audio.addEventListener("ended", next,()=>{ 
-       if (window.Android && window.Android.songEnded) {
-        window.Android.songEnded(); // You handle next song in native if needed
-    }});
+  audio.addEventListener("ended", next, () => {
+    if (window.Android && window.Android.songEnded) {
+      window.Android.songEnded(); // You handle next song in native if needed
+    }
+  });
 
-  // on current song chnages
+  // On current song changes
 
   useEffect(() => {
     // let duration = convertToMMSS(Math.floor(currSong?.duration))
@@ -439,16 +423,119 @@ function Footer() {
       if (currentLyricIndex < index) {
         element.classList.remove("active");
       }
-      // console.log(element.classList);
-      // if (element.classList.contains('active')) {
-      //   element.scrollTo({
-      //     top: lineTop,
-      //     behavior: 'smooth',
-      //   })
-
-      // }
+      // ...existing code...
     });
   });
+
+  // Favorite the song
+
+  const addToFavorite = async () => {
+    try {
+      if (localStorage.getItem("FavoriteId")) {
+        const id = localStorage.getItem("FavoriteId");
+        await axios({
+          method: "post",
+          url: `https://authentication-seven-umber.vercel.app/api/playlists/add/songs${id}`,
+          data: {
+            songs: [songId],
+            imageUrl: [],
+          }, // Body
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }).then((responce) => {
+                  document.getElementById("favourited").style.display = "block";
+        document.getElementById("favourite").style.display = "none";
+        document.getElementById("mini_favorite").style.display ="none"
+        document.getElementById("mini_favourited").style.display = "block"
+        });
+      }
+    } catch (error) {
+      toast.error("Song is not fevorite");
+       document.getElementById("favourited").style.display = "none";
+        document.getElementById("favourite").style.display = "block";
+        document.getElementById("mini_favorite").style.display ="block"
+        document.getElementById("mini_favourited").style.display = "none"
+      console.log(error);
+    }
+  };
+
+  // Remove song from favorite
+  const removefromFavorite = async () => {
+    try {
+      if (localStorage.getItem("FavoriteId")) {
+        const id = localStorage.getItem("FavoriteId");
+        await axios({
+          method: "post",
+          url: `https://authentication-seven-umber.vercel.app/api/playlists/remove/songs${id}`,
+          data: {
+            songs: songId,
+          }, // Body
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }).then((responce) => {
+           document.getElementById("favourited").style.display = "none";
+        document.getElementById("favourite").style.display = "block";
+        document.getElementById("mini_favorite").style.display ="block"
+        document.getElementById("mini_favourited").style.display = "none"
+        });
+      }
+    } catch (error) {
+      toast.error("Song is not removed from fevorite");
+        document.getElementById("favourited").style.display = "block";
+        document.getElementById("favourite").style.display = "none";
+        document.getElementById("mini_favorite").style.display ="none"
+        document.getElementById("mini_favourited").style.display = "block"
+      console.log(error);
+    }
+  };
+
+  // Get songId from playlist
+
+  const getSongId = async () => {
+    try {
+      isFevorite = false;
+      let playlistId = localStorage.getItem("FavoriteId");
+      await axios({
+        method: "get",
+        url: `https://authentication-seven-umber.vercel.app/api/playlist${playlistId}`,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }).then((responce) => {
+        let songs = responce.data.playlist[0].songs;
+        console.log(songs);
+
+        songs.forEach((element) => {
+          if (element === songId) {
+            isFevorite = true;
+          }
+        });
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getSongId().then(() => {
+      if (isFevorite) {
+        document.getElementById("favourited").style.display = "block";
+        document.getElementById("favourite").style.display = "none";
+        document.getElementById("mini_favorite").style.display ="none"
+        document.getElementById("mini_favourited").style.display = "block"
+      } else {
+        document.getElementById("favourited").style.display = "none";
+        document.getElementById("favourite").style.display = "block";
+        document.getElementById("mini_favorite").style.display ="block"
+        document.getElementById("mini_favourited").style.display = "none"
+      }
+    });
+  }, [songId]);
 
   return (
     <>
@@ -463,18 +550,18 @@ function Footer() {
                 bottom: "0px",
                 width: "100%",
                 background: "linear-gradient(0deg, black, transparent)",
-                height:"133px"
+                height: "133px",
               }
             : {
-              display: "flex",
+                display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
                 position: "fixed",
                 bottom: "0px",
                 width: "100%",
-                height:"70px",
+                height: "70px",
                 background: "linear-gradient(0deg, black, transparent)",
-            }
+              }
         }
       >
         <header
@@ -566,7 +653,27 @@ function Footer() {
                 width: "100%",
               }}
             >
+              {/* favorite svg */}
               <svg
+
+               onClick={() => {
+                      addToFavorite();
+                      if (
+                        document.getElementById("mini_favourited").style.display ===
+                        "none"
+                      ) {
+                        (document.getElementById("mini_favorite").style.display =
+                          "none"),
+                          (document.getElementById("mini_favourited").style.display =
+                            "block");
+                      } else {
+                        (document.getElementById("mini_favorite").style.display =
+                          "block"),
+                          (document.getElementById("mini_favourited").style.display =
+                            "none");
+                      }
+                    }}
+                id="mini_favorite"
                 data-encore-id="icon"
                 role="img"
                 aria-hidden="true"
@@ -575,6 +682,39 @@ function Footer() {
               >
                 <path d="M5.21 1.57a6.757 6.757 0 0 1 6.708 1.545.124.124 0 0 0 .165 0 6.741 6.741 0 0 1 5.715-1.78l.004.001a6.802 6.802 0 0 1 5.571 5.376v.003a6.689 6.689 0 0 1-1.49 5.655l-7.954 9.48a2.518 2.518 0 0 1-3.857 0L2.12 12.37A6.683 6.683 0 0 1 .627 6.714 6.757 6.757 0 0 1 5.21 1.57zm3.12 1.803a4.757 4.757 0 0 0-5.74 3.725l-.001.002a4.684 4.684 0 0 0 1.049 3.969l.009.01 7.958 9.485a.518.518 0 0 0 .79 0l7.968-9.495a4.688 4.688 0 0 0 1.049-3.965 4.803 4.803 0 0 0-3.931-3.794 4.74 4.74 0 0 0-4.023 1.256l-.008.008a2.123 2.123 0 0 1-2.9 0l-.007-.007a4.757 4.757 0 0 0-2.214-1.194z"></path>
               </svg>
+
+               <svg
+                    onClick={() => {
+                      removefromFavorite();
+                      if (
+                        document.getElementById("mini_favorite").style.display ===
+                        "block"
+                      ) {
+                        (document.getElementById("mini_favorite").style.display =
+                          "none"),
+                          (document.getElementById("mini_favourited").style.display =
+                            "block");
+                      } else {
+                        (document.getElementById("mini_favorite").style.display =
+                          "block"),
+                          (document.getElementById("mini_favourited").style.display =
+                            "none");
+                      }
+                    }}
+                    id="mini_favourited"
+                    style={{
+                      width: "22px",
+                      height: "22px",
+                      fill: "#1ed760",
+                      display: "none",
+                    }}
+                    data-encore-id="icon"
+                    role="img"
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8.667 1.912a6.257 6.257 0 0 0-7.462 7.677c.24.906.683 1.747 1.295 2.457l7.955 9.482a2.015 2.015 0 0 0 3.09 0l7.956-9.482a6.19 6.19 0 0 0 1.382-5.234l-.49.097.49-.099a6.3 6.3 0 0 0-5.162-4.98h-.002a6.24 6.24 0 0 0-5.295 1.65.623.623 0 0 1-.848 0 6.26 6.26 0 0 0-2.91-1.568z"></path>
+                  </svg>
             </div>
 
             {/* play pause the song */}
@@ -628,7 +768,7 @@ function Footer() {
             height: "50px",
             bottom: "0px",
             // backgroundColor: "#000000c7"
-            // ,
+            // ...existing code...
 
             display: "flex",
             justifyContent: "space-around",
@@ -779,7 +919,7 @@ function Footer() {
             </div>
           </NavLink>
         </div>
-
+        {/* big player */}
         <div
           id="big_Player"
           style={{
@@ -928,7 +1068,7 @@ function Footer() {
                     {currSong?.artists.primary[0].name}
                   </div>
                 </div>
-
+                {/* favorite the song */}
                 <div
                   style={{
                     width: "100%",
@@ -939,13 +1079,69 @@ function Footer() {
                   }}
                 >
                   <svg
+                    onClick={() => {
+                      addToFavorite();
+                      if (
+                        document.getElementById("favourited").style.display ===
+                        "none"
+                      ) {
+                        (document.getElementById("favourite").style.display =
+                          "none"),
+                          (document.getElementById("favourited").style.display =
+                            "block");
+                      } else {
+                        (document.getElementById("favourite").style.display =
+                          "block"),
+                          (document.getElementById("favourited").style.display =
+                            "none");
+                      }
+                    }}
                     data-encore-id="icon"
                     role="img"
                     aria-hidden="true"
-                    style={{ width: "25px", height: "25px", fill: "white" }}
+                    id="favourite"
+                    style={{
+                      width: "25px",
+                      height: "25px",
+                      fill: "white",
+                      display: "block",
+                    }}
                     viewBox="0 0 24 24"
                   >
                     <path d="M5.21 1.57a6.757 6.757 0 0 1 6.708 1.545.124.124 0 0 0 .165 0 6.741 6.741 0 0 1 5.715-1.78l.004.001a6.802 6.802 0 0 1 5.571 5.376v.003a6.689 6.689 0 0 1-1.49 5.655l-7.954 9.48a2.518 2.518 0 0 1-3.857 0L2.12 12.37A6.683 6.683 0 0 1 .627 6.714 6.757 6.757 0 0 1 5.21 1.57zm3.12 1.803a4.757 4.757 0 0 0-5.74 3.725l-.001.002a4.684 4.684 0 0 0 1.049 3.969l.009.01 7.958 9.485a.518.518 0 0 0 .79 0l7.968-9.495a4.688 4.688 0 0 0 1.049-3.965 4.803 4.803 0 0 0-3.931-3.794 4.74 4.74 0 0 0-4.023 1.256l-.008.008a2.123 2.123 0 0 1-2.9 0l-.007-.007a4.757 4.757 0 0 0-2.214-1.194z"></path>
+                  </svg>
+
+                  <svg
+                    onClick={() => {
+                      removefromFavorite();
+                      if (
+                        document.getElementById("favourite").style.display ===
+                        "block"
+                      ) {
+                        (document.getElementById("favourite").style.display =
+                          "none"),
+                          (document.getElementById("favourited").style.display =
+                            "block");
+                      } else {
+                        (document.getElementById("favourite").style.display =
+                          "block"),
+                          (document.getElementById("favourited").style.display =
+                            "none");
+                      }
+                    }}
+                    id="favourited"
+                    style={{
+                      width: "25px",
+                      height: "25px",
+                      fill: "#1ed760",
+                      display: "none",
+                    }}
+                    data-encore-id="icon"
+                    role="img"
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8.667 1.912a6.257 6.257 0 0 0-7.462 7.677c.24.906.683 1.747 1.295 2.457l7.955 9.482a2.015 2.015 0 0 0 3.09 0l7.956-9.482a6.19 6.19 0 0 0 1.382-5.234l-.49.097.49-.099a6.3 6.3 0 0 0-5.162-4.98h-.002a6.24 6.24 0 0 0-5.295 1.65.623.623 0 0 1-.848 0 6.26 6.26 0 0 0-2.91-1.568z"></path>
                   </svg>
                 </div>
               </div>
