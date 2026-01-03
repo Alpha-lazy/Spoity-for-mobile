@@ -35,6 +35,7 @@ function SearchSongs() {
   }
 
   async function searchSongs(value) {
+
     try {
       setIsLoading(true);
 
@@ -50,7 +51,10 @@ function SearchSongs() {
         // }
         // setSearchResult(responce.data.data =>{serchResult.song.filter((song=>{song.id !== serchResult.topQuery[0].id}))})
         setIsLoading(false);
-        console.log(responce.data.data);
+       
+      
+       
+
       } else {
         setIsLoading(false);
       }

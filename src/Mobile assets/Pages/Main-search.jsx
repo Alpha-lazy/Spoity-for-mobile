@@ -37,7 +37,9 @@ function MainSearch() {
 
   async function searchSongs(value) {
     try {
+    
       setIsLoading(true);
+      
 
       if (value.trim() !== "") {
         const responce = await axios.request({
@@ -50,9 +52,11 @@ function MainSearch() {
         //   setSearchResult({...serchResult,songs:responce.data.data?.songs.filter(song=>{song.id !== responce.data.data?.topQuery[0]?.id})})
         // }
         // setSearchResult(responce.data.data =>{serchResult.song.filter((song=>{song.id !== serchResult.topQuery[0].id}))})
+      
         setIsLoading(false);
-        console.log(responce.data.data);
-      } else {
+      }
+      
+     else {
         setIsLoading(false);
       }
     } catch (error) {
@@ -64,6 +68,7 @@ function MainSearch() {
 
   useEffect(() => {
     searchSongs(SearchValue);
+  
   }, [SearchValue]);
 
   function HandleOnChnage(e) {
