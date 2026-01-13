@@ -45,6 +45,9 @@ export const DataProvider = ({ children }) => {
     [audio]
   );
 
+
+
+
   // Play/pause toggle
   const togglePlayPause = useCallback(() => {
     if (isPlaying) {

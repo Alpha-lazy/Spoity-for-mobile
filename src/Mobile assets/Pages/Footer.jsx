@@ -389,6 +389,23 @@ function Footer() {
       currSong?.artists.primary,
       currSong?.duration
     );
+   
+    if ("mediaSession" in navigator) {
+       navigator.mediaSession.metadata = new MediaMetadata({  
+        title: currSong?.name,
+        artist: "",
+        album: "",
+        artwork: [
+          { src: currSong?.image[2].url, sizes: '96x96', type: 'image/png' },
+        ]
+      });
+      navigator.mediaSession.setActionHandler("play", togglePlaypause);
+      navigator.mediaSession.setActionHandler("pause", togglePlaypause);
+      navigator.mediaSession.setActionHandler("previoustrack", prev);
+      navigator.mediaSession.setActionHandler("nexttrack", next); 
+        
+    }
+
   }, [currSong]);
 
   const lyricElements = document.querySelectorAll(".lyric-line");
