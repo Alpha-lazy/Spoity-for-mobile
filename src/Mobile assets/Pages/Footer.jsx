@@ -396,7 +396,8 @@ function Footer() {
         artist: currSong?.artists.primary[0].name,
         album: "",
         artwork: [
-          { src: currSong?.image[2].url, sizes: "96x96", type: "image/png" }
+          { src: currSong?.image[2].url, sizes: "96x96", type: "image/png" },
+          { src: currSong?.image[2].url, sizes: "512x512", type: "image/png" },
         ],
       
       
