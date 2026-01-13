@@ -390,14 +390,16 @@ function Footer() {
       currSong?.duration
     );
    
-    if ("mediaSession" in navigator) {
+    if ("mediaSession" in navigator && currSong !== undefined) {
        navigator.mediaSession.metadata = new MediaMetadata({  
         title: currSong?.name,
-        artist: "",
+        artist: currSong?.artists.primary[0].name,
         album: "",
         artwork: [
-          { src: currSong?.image[2].url, sizes: '96x96', type: 'image/png' },
-        ]
+          { src: currSong?.image[2].url, sizes: "96x96", type: "image/png" }
+        ],
+      
+      
       });
       navigator.mediaSession.setActionHandler("play", togglePlaypause);
       navigator.mediaSession.setActionHandler("pause", togglePlaypause);
