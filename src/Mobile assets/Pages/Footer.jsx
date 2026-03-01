@@ -378,7 +378,6 @@ function Footer() {
     if (window.Android && window.Android.songEnded) {
       window.Android.songEnded(); // You handle next song in native if needed
     }
-    next();
   });
 
   // On current song changes
